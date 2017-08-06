@@ -1,4 +1,4 @@
-aeae7909bb125fc64b2af42ae5ef855b *DESCRIPTION
+1602df9d6039251550d30f2294ab3545 *DESCRIPTION
 a43931be601d0b6e4b8a1ba19c619f42 *NAMESPACE
 287df7dd733ccf2179b375adc384d920 *R/blq.R
 f32fd94bb65d8dbe086d5798050b320c *R/blr.R
@@ -58,7 +58,7 @@ c60690eaa5e00b176008fc0d794fbd37 *man/plot.fitted.bsamdpm.Rd
 d684a511d59d708a84e8fc55a596f947 *man/rald.Rd
 ca9a7c9333363c97a39fa21635f920e5 *man/traffic.Rd
 d0bdb7fd1a0a13d62f216537fddff056 *man/wage.union.Rd
-5be98ebff0b1b8155e715497e98649a3 *src/Makevars
+08932909c40b91042aae7f55321e2a1d *src/Makevars
 7854503b62c9a504b946234c9d8ae6c8 *src/ToolsRfunc.c
 3cc20a8a635a60f6d4453dde87ecb451 *src/ToolsRfunf.f90
 b2cfc9f8a94969d9aa02bb99866735d5 *src/blreg.f90
