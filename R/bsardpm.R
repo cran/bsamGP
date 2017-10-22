@@ -1,15 +1,28 @@
-"bsardpm" <- function(y, w, x, xmin, xmax, nbasis, nint, mcmc = list(), prior = list(), egrid, ngrid, location = TRUE,
+"bsardpm" <- function(formula, xmin, xmax, nbasis, nint, mcmc = list(), prior = list(), egrid, ngrid, location = TRUE,
                       shape = c("Free", "Increasing", "Decreasing", "IncreasingConvex", "DecreasingConcave",
                                 "IncreasingConcave", "DecreasingConvex", "IncreasingS", "DecreasingS",
                                 "IncreasingRotatedS", "DecreasingRotatedS", "InvertedU", "Ushape")) {
   cl <- match.call()
-  yobs <- y
-  if (missing(w)) {
-    wdata <- NULL
-  } else {
-    wdata <- w
+
+  ywxdata <- interpret.bsam(formula)
+  yobs <- ywxdata[[1]]
+  yname <- ywxdata[[2]]
+  wdata <- ywxdata[[3]]
+  wnames <- ywxdata[[4]]
+  xobs <- ywxdata[[5]]
+  xname <- ywxdata[[6]]
+
+  nobs <- nrow(yobs)
+  nparw <- ncol(wdata)
+  ndimw <- nparw - 1
+
+  if (location) {
+    if (nparw >= 2) {
+      wdata <- wdata[, -1, drop = FALSE]
+      nparw <- ncol(wdata)
+      wnames <- wnames[-1]
+    }
   }
-  xobs <- x
 
   if (missing(nbasis))
     stop("The number of basis functions are specified by user.")
@@ -18,64 +31,6 @@
   fmodel <- fshape$fmodel
   fpm <- fshape$fpm
   nfun <- fshape$nfun
-
-  if (!is.matrix(yobs))
-    yobs <- as.matrix(yobs)
-  yname <- colnames(yobs)
-  if (is.null(yname))
-    yname <- "y"
-  colnames(yobs) <- yname
-  nobs <- nrow(yobs)
-
-  if (location) {
-    if (is.null(wdata)) {
-      wdata <- matrix(1, nrow = nobs, ncol = 1)
-      wnames <- "const"
-      colnames(wdata) <- wnames
-      ndimw <- 0
-      nparw <- ndimw + 1
-    } else {
-      if (!is.matrix(wdata))
-        wdata <- as.matrix(wdata)
-      wnames <- colnames(wdata)
-      if (is.null(wnames))
-        wnames <- paste("w", 1:ncol(wdata), sep = "")
-      colnames(wdata) <- wnames
-      ndimw <- nparw <- ncol(wdata)
-    }
-  } else {
-    if (is.null(wdata)) {
-      wdata <- matrix(1, nrow = nobs, ncol = 1)
-      wnames <- "const"
-      colnames(wdata) <- wnames
-      ndimw <- 0
-    } else {
-      if (!is.matrix(wdata))
-        wdata <- as.matrix(wdata)
-      wnames <- colnames(wdata)
-      if (is.null(wnames))
-        wnames <- paste("w", 1:ncol(wdata), sep = "")
-      wdata <- cbind(1, wdata)
-      wnames <- c("const", wnames)
-      colnames(wdata) <- wnames
-      ndimw <- ncol(wdata) - 1
-    }
-    nparw <- ndimw + 1
-  }
-
-  if (!is.matrix(xobs))
-    xobs <- as.matrix(xobs)
-  if (nfun != ncol(xobs))
-    stop("The number of shape and columns of x should be same.")
-  xname <- colnames(xobs)
-  if (is.null(xname)) {
-    if (nfun == 1) {
-      xname <- 'x'
-    } else {
-      xname <- paste("x", 1:nfun, sep = "")
-    }
-  }
-  colnames(xobs) <- xname
 
   if (missing(nint)) {
     nint <- 200

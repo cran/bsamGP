@@ -11,7 +11,7 @@
 
 \usage{
 
-bsardpm(y, w, x, xmin, xmax, nbasis, nint,
+bsardpm(formula, xmin, xmax, nbasis, nint,
 mcmc = list(), prior = list(), egrid, ngrid, location = TRUE,
 shape = c('Free', 'Increasing', 'Decreasing', 'IncreasingConvex', 'DecreasingConcave',
 'IncreasingConcave', 'DecreasingConvex', 'IncreasingS', 'DecreasingS',
@@ -19,13 +19,7 @@ shape = c('Free', 'Increasing', 'Decreasing', 'IncreasingConvex', 'DecreasingCon
 }
 
 \arguments{
-  \item{y}{			a vector of response values.}
-
-  \item{w}{			a vector or matrix giving covariates of dimension \code{n} times \code{ndimw}
-				excluding intercept for a parametric component (w can be omitted)}
-
-  \item{x}{			a vector or matrix giving covariates of dimension \code{n} times \code{K}
-				for nonparametric components.}
+  \item{formula}{		an object of class \dQuote{\code{\link{formula}}} }
 
   \item{xmin}{		a vector or scalar giving user-specific minimum values of x.
   				The default values are minimum values of x.}
@@ -178,32 +172,32 @@ Neal, R. M. (2000) Markov chain sampling methods for Dirichlet process mixture m
 
 \examples{
 \dontrun{
-	#####################
-	# Increasing-convex #
-	#####################
+#####################
+# Increasing-convex #
+#####################
 
-	# Simulate data
-	  set.seed(1)
+# Simulate data
+set.seed(1)
 
-	  n <- 200
-	  x <- runif(n)
-	  e <- c(rnorm(n/2, sd = 0.5), rnorm(n/2, sd = 3))
-	  y <- exp(6*x - 3) + e
+n <- 200
+x <- runif(n)
+e <- c(rnorm(n/2, sd = 0.5), rnorm(n/2, sd = 3))
+y <- exp(6*x - 3) + e
 
-	  # Number of cosine basis functions
-	  nbasis <- 50
+# Number of cosine basis functions
+nbasis <- 50
 
-	  # Fit the model with default priors and mcmc parameters
-	  fout <- bsardpm(y = y, x = x, nbasis = nbasis, shape = 'IncreasingConvex')
+# Fit the model with default priors and mcmc parameters
+fout <- bsardpm(y ~ fs(x), nbasis = nbasis, shape = 'IncreasingConvex')
 
-	  # Summary
-	  print(fout)
+# Summary
+print(fout); summary(fout)
 
-	  # fitted values
-	  fit <- fitted(fout)
+# fitted values
+fit <- fitted(fout)
 
-	  # Plot
-	  plot(fit, ask = TRUE)
+# Plot
+plot(fit, ask = TRUE)
 
 }
 }

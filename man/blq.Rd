@@ -7,15 +7,14 @@
 }
 
 \usage{
-
-blq(y, w, p, mcmc = list(), prior = list(), marginal.likelihood = TRUE)
+blq(formula, data = NULL, p, mcmc = list(), prior = list(), marginal.likelihood = TRUE)
 }
 
 \arguments{
-  \item{y}{			a vector of response values.}
+  \item{formula}{		an object of class \dQuote{\code{\link{formula}}} }
 
-  \item{w}{			a vector or matrix giving covariates of dimension \code{n} times \code{ndimw}
-				excluding intercept for a parametric component (w can be omitted)}
+  \item{data}{	    an optional data frame.}
+
   \item{p}{			quantile of interest (default=0.5). }
 
   \item{mcmc}{			a list giving the MCMC parameters.
@@ -76,7 +75,7 @@ blq(y, w, p, mcmc = list(), prior = list(), marginal.likelihood = TRUE)
 }
 
 \seealso{
-\code{\link{blr}}
+\code{\link{blr}}, \code{\link{gblr}}
 }
 
 \references{
@@ -92,30 +91,28 @@ Kozumi, H. and Kobayashi, G. (2011) Gibbs sampling methods for Bayesian quantile
 }
 
 \examples{
-\dontrun{
-	#####################
-	# Simulated example #
-	#####################
+#####################
+# Simulated example #
+#####################
 
-	# Simulate data
-	  set.seed(1)
+# Simulate data
+set.seed(1)
 
-	  n <- 100
-	  w <- runif(n)
-	  y <- 3 + 2*w + rald(n, scale = 0.8, p = 0.5)
+n <- 100
+w <- runif(n)
+y <- 3 + 2*w + rald(n, scale = 0.8, p = 0.5)
 
-	  # Fit median regression
-	  fout <- blq(y = y, w = w, p = 0.5)
+# Fit median regression
+fout <- blq(y ~ w, p = 0.5)
 
-	  # Summary
-	  print(fout)
+# Summary
+print(fout); summary(fout)
 
-	  # fitted values
-	  fit <- fitted(fout)
+# fitted values
+fit <- fitted(fout)
 
-	  # Plots
-	  plot(fout)
-}
+# Plots
+plot(fout)
 }
 
 

@@ -2,10 +2,11 @@ PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -lm
 
 CSRC = 	registerDynamicSymbol.c ToolsRfunc.c
 FMODSRC = ToolsRfunf.f90 bsamTools.f90 gbsamTools.f90
-FSRC = bqreg.f90 bqreggetlogg.f90 bsad.f90 bsaqam.f90 bsaqamdpscale.f90 \
+FSRC = blreg.f90 bqreg.f90 bqreggetlogg.f90 bsad.f90 bsaqam.f90 bsaqamdpscale.f90 \
 	bsaram.f90 bsaramdplocationscale.f90 bsaramdpscale.f90 bsaramgetlogg.f90 \
-	gbglmgetlogg.f90 gblogitKS.f90 gbnegbinMH.f90 gbpoisgammMH.f90 gbpoisMH.f90 gbprobitAC.f90 \
-	gbsaramgetlogg.f90 gbsarlogitKS.f90 gbsarnegbinMH.f90 gbsarpoisgammMH.f90 gbsarpoisMH.f90 gbsarprobitAC.f90
+	gbglmgetlogg.f90 gblogitKS.f90 gblogitMH.f90 gbnegbinMH.f90 gbpoisgammMH.f90 gbpoisMH.f90 gbprobitAC.f90 \
+	gbsaramgetlogg.f90 gbsarlogitKS.f90 gbsarlogitMH.f90 gbsarnegbinMH.f90 gbsarpoisgammMH.f90 gbsarpoisMH.f90 gbsarprobitAC.f90 \
+	predictbsam.f90
 
 # Define the order of compilation
 OBJECTS = $(CSRC:.c=.o) $(FMODSRC:.f90=.o) $(FSRC:.f90=.o)
@@ -15,6 +16,7 @@ $(SHLIB): $(OBJECTS)
 # Setup dependencies for parallel make
 bsamTools.o : ToolsRfunf.o
 gbsamTools.o : ToolsRfunf.o
+blreg.o : ToolsRfunf.o
 bqreg.o : ToolsRfunf.o
 bqreggetlogg.o : bsamTools.o
 bsad.o : ToolsRfunf.o
@@ -26,13 +28,16 @@ bsaramdpscale.o : ToolsRfunf.o bsamTools.o
 bsaramgetlogg.o : bsamTools.o
 gbglmgetlogg.o : ToolsRfunf.o
 gblogitKS.o : ToolsRfunf.o
+gblogitMH.o : ToolsRfunf.o
 gbnegbinMH.o : ToolsRfunf.o
 gbpoisgammMH.o : ToolsRfunf.o
 gbpoisMH.o : ToolsRfunf.o
 gbprobitAC.o : ToolsRfunf.o
-gbsaramgetlogg.o : ToolsRfunf.o
+gbsaramgetlogg.o : bsamTools.o
 gbsarlogitKS.o : ToolsRfunf.o gbsamTools.o
+gbsarlogitMH.o : ToolsRfunf.o gbsamTools.o
 gbsarnegbinMH.o : ToolsRfunf.o gbsamTools.o
 gbsarpoisgammMH.o : ToolsRfunf.o gbsamTools.o
-gbsarpoisMH.o : ToolsRfunf.o
-gbsarprobitAC.o : ToolsRfunf.o
+gbsarpoisMH.o : ToolsRfunf.o gbsamTools.o
+gbsarprobitAC.o : ToolsRfunf.o gbsamTools.o
+predictbsam.o : ToolsRfunf.o gbsamTools.o

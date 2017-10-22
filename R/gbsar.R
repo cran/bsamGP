@@ -1,9 +1,22 @@
-"gbsar" <- function(y, w, x, xmin, xmax, n, family, link, nbasis, nint, mcmc = list(), prior = list(),
+"gbsar" <- function(formula, xmin, xmax, family, link, nbasis, nint, mcmc = list(), prior = list(),
                     shape = c("Free", "Increasing", "Decreasing", "IncreasingConvex", "DecreasingConcave",
                               "IncreasingConcave", "DecreasingConvex", "IncreasingS", "DecreasingS",
                               "IncreasingRotatedS", "DecreasingRotatedS", "InvertedU", "Ushape"),
-                    marginal.likelihood = TRUE) {
+                    marginal.likelihood = TRUE, algorithm = c("AM", "KS")) {
   cl <- match.call()
+
+  ywxdata <- interpret.bsam(formula)
+  yobs <- ywxdata[[1]]
+  yname <- ywxdata[[2]]
+  wdata <- ywxdata[[3]]
+  wnames <- ywxdata[[4]]
+  xobs <- ywxdata[[5]]
+  xname <- ywxdata[[6]]
+
+  nobs <- nrow(yobs)
+  nparw <- ncol(wdata)
+  ndimw <- nparw - 1
+
   if (family %in% c("bernoulli", "poisson", "negative.binomial", "poisson.gamma")) {
     if (link %in% c("probit", "logit", "log")) {
       if (family %in% c("poisson", "negative.binomial", "poisson.gamma") && link != "log") {
@@ -20,27 +33,22 @@
   }
 
   if (family == "bernoulli") {
-    chk <- unique(y)
+    chk <- unique(yobs)
     if (length(chk) != 2L) {
       stop("bernoulli models only allow binary responses")
     } else {
-      y <- factor(y, labels = 0:1)
-      y <- as.integer(paste(y))
+      yobs <- factor(yobs, labels = 0:1)
+      yobs <- as.integer(paste(yobs))
     }
   }
   if (family %in% c("poisson", "negative.binomial", "poisson.gamma")) {
-    chk <- (abs(y - round(y)) < .Machine$double.eps^0.5)
-    if (sum(chk) != length(y))
+    chk <- (abs(yobs - round(yobs)) < .Machine$double.eps^0.5)
+    if (sum(chk) != length(yobs))
       stop(paste(family, " model only allow count responses.", sep = ""))
   }
-
-  yobs <- y
-  if (missing(w)) {
-    wdata <- NULL
-  } else {
-    wdata <- w
+  if (family == "bernoulli" && link == "logit") {
+    algorithm = match.arg(algorithm)
   }
-  xobs <- x
 
   if (missing(nbasis))
     stop("The number of basis functions are specified by user.")
@@ -50,50 +58,8 @@
   fpm <- fshape$fpm
   nfun <- fshape$nfun
 
-  if (!is.matrix(yobs))
-    yobs <- as.matrix(yobs)
-  yname <- colnames(yobs)
-  if (is.null(yname))
-    yname <- "y"
-  colnames(yobs) <- yname
-  nobs <- nrow(yobs)
-
-  if (missing(n)) {
-    n <- rep(1, nobs)
-  }
-  nmax <- max(n)
-
-  if (is.null(wdata)) {
-    wdata <- matrix(1, nrow = nobs, ncol = 1)
-    wnames <- "const"
-    colnames(wdata) <- wnames
-    ndimw <- 0
-  } else {
-    if (!is.matrix(wdata))
-      wdata <- as.matrix(wdata)
-    wnames <- colnames(wdata)
-    if (is.null(wnames))
-      wnames <- paste("w", 1:ncol(wdata), sep = "")
-    wdata <- cbind(1, wdata)
-    wnames <- c("const", wnames)
-    colnames(wdata) <- wnames
-    ndimw <- ncol(wdata) - 1
-  }
-  nparw <- ndimw + 1
-
-  if (!is.matrix(xobs))
-    xobs <- as.matrix(xobs)
   if (nfun != ncol(xobs))
     stop("The number of shape and columns of x should be same.")
-  xname <- colnames(xobs)
-  if (is.null(xname)) {
-    if (nfun == 1) {
-      xname <- 'x'
-    } else {
-      xname <- paste("x", 1:nfun, sep = "")
-    }
-  }
-  colnames(xobs) <- xname
 
   if (missing(nint)) {
     nint <- 200
@@ -169,17 +135,31 @@
                     pmetg = numeric(nfun), NAOK = TRUE, PACKAGE = "bsamGP")
   }
   if (family == "bernoulli" && link == "logit") {
-    foo <- .Fortran("gbsarlogitKS", as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
-                    as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel), as.double(fpm), as.double(theta0_m0),
-                    as.double(theta0_s0), as.double(tau2_m0), as.double(tau2_v0), as.double(w0), as.double(beta_m0), as.matrix(beta_v0),
-                    as.double(alpha_m0), as.double(alpha_s0), as.double(psi_m0), as.double(psi_s0), as.double(psifixed), as.double(omega_m0),
-                    as.double(omega_s0), as.integer(iflagprior), as.integer(iflagpsi), as.integer(maxmodmet), as.integer(nblow0), as.integer(nblow),
-                    as.integer(smcmc), as.integer(nskip), as.integer(ndisp), zetag = matrix(0, smcmc, nfun), tau2g = matrix(0, smcmc, nfun),
-                    gammag = matrix(0, smcmc, nfun), thetag = array(0, dim = c(nbasis + 1, nfun, smcmc)), betag = matrix(0, smcmc, nparw),
-                    alphag = matrix(0, smcmc, nfun), psig = matrix(0, smcmc, nfun), omegag = matrix(0, smcmc, nfun),
-                    fxgridg = array(0, dim = c(nint + 1, nfun, smcmc)), fxobsg = array(0, dim = c(nobs, nfun, smcmc)), muhatg = matrix(0, smcmc, nobs),
-                    wbg = matrix(0, smcmc, nobs), loglikeg = numeric(smcmc), logpriorg = numeric(smcmc), imodmetg = as.integer(numeric(1)),
-                    pmetg = numeric(nfun), NAOK = TRUE, PACKAGE = "bsamGP")
+    if (algorithm == "KS") {
+      foo <- .Fortran("gbsarlogitKS", as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
+                      as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel), as.double(fpm), as.double(theta0_m0),
+                      as.double(theta0_s0), as.double(tau2_m0), as.double(tau2_v0), as.double(w0), as.double(beta_m0), as.matrix(beta_v0),
+                      as.double(alpha_m0), as.double(alpha_s0), as.double(psi_m0), as.double(psi_s0), as.double(psifixed), as.double(omega_m0),
+                      as.double(omega_s0), as.integer(iflagprior), as.integer(iflagpsi), as.integer(maxmodmet), as.integer(nblow0), as.integer(nblow),
+                      as.integer(smcmc), as.integer(nskip), as.integer(ndisp), zetag = matrix(0, smcmc, nfun), tau2g = matrix(0, smcmc, nfun),
+                      gammag = matrix(0, smcmc, nfun), thetag = array(0, dim = c(nbasis + 1, nfun, smcmc)), betag = matrix(0, smcmc, nparw),
+                      alphag = matrix(0, smcmc, nfun), psig = matrix(0, smcmc, nfun), omegag = matrix(0, smcmc, nfun),
+                      fxgridg = array(0, dim = c(nint + 1, nfun, smcmc)), fxobsg = array(0, dim = c(nobs, nfun, smcmc)), muhatg = matrix(0, smcmc, nobs),
+                      wbg = matrix(0, smcmc, nobs), loglikeg = numeric(smcmc), logpriorg = numeric(smcmc), imodmetg = as.integer(numeric(1)),
+                      pmetg = numeric(nfun), NAOK = TRUE, PACKAGE = "bsamGP")
+    } else {
+      foo <- .Fortran("gbsarlogitMH", as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
+                      as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel), as.double(fpm), as.double(theta0_m0),
+                      as.double(theta0_s0), as.double(tau2_m0), as.double(tau2_v0), as.double(w0), as.double(beta_m0), as.matrix(beta_v0),
+                      as.double(alpha_m0), as.double(alpha_s0), as.double(psi_m0), as.double(psi_s0), as.double(psifixed), as.double(omega_m0),
+                      as.double(omega_s0), as.integer(iflagprior), as.integer(iflagpsi), as.integer(maxmodmet), as.integer(nblow0), as.integer(nblow),
+                      as.integer(smcmc), as.integer(nskip), as.integer(ndisp), zetag = matrix(0, smcmc, nfun), tau2g = matrix(0, smcmc, nfun),
+                      gammag = matrix(0, smcmc, nfun), thetag = array(0, dim = c(nbasis + 1, nfun, smcmc)), betag = matrix(0, smcmc, nparw),
+                      alphag = matrix(0, smcmc, nfun), psig = matrix(0, smcmc, nfun), omegag = matrix(0, smcmc, nfun),
+                      fxgridg = array(0, dim = c(nint + 1, nfun, smcmc)), fxobsg = array(0, dim = c(nobs, nfun, smcmc)), muhatg = matrix(0, smcmc, nobs),
+                      wbg = matrix(0, smcmc, nobs), loglikeg = numeric(smcmc), logpriorg = numeric(smcmc), imodmetg = as.integer(numeric(1)),
+                      pmetg = numeric(nfun), NAOK = TRUE, PACKAGE = "bsamGP")
+    }
   }
   if (family == "poisson") {
     foo <- .Fortran("gbsarpoisMH", as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
@@ -400,11 +380,9 @@
   res.out$model <- "gbsar"
   res.out$family <- family
   res.out$link <- link
-  res.out$y <- y
-  res.out$n <- n
-  if (!missing(w))
-    res.out$w <- w
-  res.out$x <- as.matrix(x)
+  res.out$y <- yobs
+  res.out$w <- wdata
+  res.out$x <- xobs
   res.out$xmin <- xmin
   res.out$xmax <- xmax
   res.out$n <- nobs
@@ -440,6 +418,10 @@
   if (marginal.likelihood) {
     res.out$lmarg.gd <- lilm
     res.out$lmarg.nr <- lilnr
+  }
+
+  if (family == "bernoulli" && link == "logit") {
+    res.out$algorithm = algorithm
   }
 
   class(res.out) <- "bsam"

@@ -109,32 +109,58 @@ Lenk, P. (2003) Bayesian semiparametric density estimation and model verificatio
 }
 
 \examples{
+\dontshow{
+set.seed(1)
+x <- rgamma(50,2,1)
+
+# mcmc parameters
+mcmc <- list(nblow = 100,
+             smcmc = 100,
+             nskip = 1,
+             ndisp = 100,
+             kappaloop = 1)
+
+# fits BSAD model 
+fout <- bsad(x = x, xmin = 0, xmax = 10, nint = 501, mcmc = mcmc,
+            smoother = 'geometric', parametric = 'gamma')
+
+# Summary
+print(fout); summary(fout)
+
+# fitted values
+fit <- fitted(fout, HPD = FALSE)
+
+# predictive density plot
+plot(fit, ask = FALSE)
+}
 \dontrun{
-	############################
-	# Old Faithful geyser data #
-	############################
-	data(faithful)
-	attach(faithful)
+############################
+# Old Faithful geyser data #
+############################
+data(faithful)
+attach(faithful)
 
-	# mcmc parameters
-	mcmc <- list(nblow = 10000,
-	             smcmc = 1000,
-	             nskip = 10,
-	             ndisp = 1000,
-	             kappaloop = 5)
+# mcmc parameters
+mcmc <- list(nblow = 10000,
+	           smcmc = 1000,
+	           nskip = 10,
+	           ndisp = 1000,
+	           kappaloop = 5)
 
-	# fits BSAD model
-	fout <- bsad(x = eruptions, xmin = 0, xmax = 8, nint = 501, mcmc = mcmc,
-	             smoother = 'geometric', parametric = 'gamma')
-	print(fout)
+# fits BSAD model
+fout <- bsad(x = eruptions, xmin = 0, xmax = 8, nint = 501, mcmc = mcmc,
+             smoother = 'geometric', parametric = 'gamma')
 
-	# posterior summary
-	fit <- fitted(fout)
+# Summary
+print(fout); summary(fout)
 
-	# predictive density plot
-	plot(fit, ask = TRUE)
+# fitted values
+fit <- fitted(fout)
 
-	detach(faithful)
+# predictive density plot
+plot(fit, ask = TRUE)
+
+detach(faithful)
 }
 }
 

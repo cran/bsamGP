@@ -1,31 +1,15 @@
-"blr" <- function(y, w, mcmc = list(), prior = list(), marginal.likelihood = TRUE) {
+"blr" <- function(formula, data = NULL, mcmc = list(), prior = list(), marginal.likelihood = TRUE) {
   cl <- match.call()
+  
+  ywdata <- parse.formula(formula, data = data)
+  yobs <- ywdata[[1]]
+  yname <- ywdata[[2]]
+  wdata <- ywdata[[3]]
+  wnames <- ywdata[[4]]
 
-  yobs <- y
-  if (missing(w)) {
-    wdata <- NULL
-  } else {
-    wdata <- w
-  }
-
-  if (!is.matrix(yobs))
-    yobs <- as.matrix(yobs)
-  yname <- colnames(yobs)
-  if (is.null(yname))
-    yname <- "y"
-  colnames(yobs) <- yname
   nobs <- nrow(yobs)
-
-  if (!is.matrix(wdata))
-    wdata <- as.matrix(wdata)
-  wnames <- colnames(wdata)
-  if (is.null(wnames))
-    wnames <- paste("w", 1:ncol(wdata), sep = "")
-  wdata <- cbind(1, wdata)
-  wnames <- c("const", wnames)
-  colnames(wdata) <- wnames
-  ndimw <- ncol(wdata) - 1
-  nparw <- ndimw + 1
+  nparw <- ncol(wdata)
+  ndimw <- nparw - 1
 
   privals <- list(beta_m0 = numeric(nparw), beta_v0 = diag(100, nparw),
                   sigma2_m0 = 1, sigma2_v0 = 1000)

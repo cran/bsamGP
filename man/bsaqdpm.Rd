@@ -11,7 +11,7 @@
 
 \usage{
 
-bsaqdpm(y, w, x, xmin, xmax, p, nbasis, nint,
+bsaqdpm(formula, xmin, xmax, p, nbasis, nint,
 mcmc = list(), prior = list(), egrid, ngrid = 500,
 shape = c('Free', 'Increasing', 'Decreasing', 'IncreasingConvex', 'DecreasingConcave',
 'IncreasingConcave', 'DecreasingConvex', 'IncreasingS', 'DecreasingS',
@@ -19,13 +19,7 @@ shape = c('Free', 'Increasing', 'Decreasing', 'IncreasingConvex', 'DecreasingCon
 }
 
 \arguments{
-  \item{y}{			a vector of response values.}
-
-  \item{w}{			a vector or matrix giving covariates of dimension \code{n} times \code{ndimw}
-				excluding intercept for a parametric component (w can be omitted)}
-
-  \item{x}{			a vector or matrix giving covariates of dimension \code{n} times \code{K}
-				for nonparametric components.}
+  \item{formula}{		an object of class \dQuote{\code{\link{formula}}} }
 
   \item{xmin}{		a vector or scalar giving user-specific minimum values of x.
   				The default values are minimum values of x.}
@@ -176,42 +170,42 @@ Neal, R. M. (2000) Markov chain sampling methods for Dirichlet process mixture m
 
 \examples{
 \dontrun{
-	######################
-	# Increasing-concave #
-	######################
+######################
+# Increasing-concave #
+######################
 
-	# Simulate data
-	  set.seed(1)
+# Simulate data
+set.seed(1)
 
-	  n <- 500
-	  x <- runif(n)
-	  e <- c(rald(n/2, scale = 0.5, p = 0.5),
-	         rald(n/2, scale = 3, p = 0.5))
-	  y <- log(1 + 10*x) + e
+n <- 500
+x <- runif(n)
+e <- c(rald(n/2, scale = 0.5, p = 0.5),
+       rald(n/2, scale = 3, p = 0.5))
+y <- log(1 + 10*x) + e
 
-	  # Number of cosine basis functions
-	  nbasis <- 50
+# Number of cosine basis functions
+nbasis <- 50
 
-	  # Fit the model with default priors and mcmc parameters
-	  fout1 <- bsaqdpm(y = y, x = x, p = 0.25, nbasis = nbasis,
-	                   shape = 'IncreasingConcave')
-	  fout2 <- bsaqdpm(y = y, x = x, p = 0.5, nbasis = nbasis,
-	                   shape = 'IncreasingConcave')
-	  fout3 <- bsaqdpm(y = y, x = x, p = 0.75, nbasis = nbasis,
-	                   shape = 'IncreasingConcave')
+# Fit the model with default priors and mcmc parameters
+fout1 <- bsaqdpm(y ~ fs(x), p = 0.25, nbasis = nbasis,
+                 shape = 'IncreasingConcave')
+fout2 <- bsaqdpm(y ~ fs(x), p = 0.5, nbasis = nbasis,
+                 shape = 'IncreasingConcave')
+fout3 <- bsaqdpm(y ~ fs(x), p = 0.75, nbasis = nbasis,
+                 shape = 'IncreasingConcave')
 
-	  # fitted values
-	  fit1 <- fitted(fout1)
-	  fit2 <- fitted(fout2)
-	  fit3 <- fitted(fout3)
+# fitted values
+fit1 <- fitted(fout1)
+fit2 <- fitted(fout2)
+fit3 <- fitted(fout3)
 
-	  # plots
-	  plot(x, y, lwd = 2, xlab = 'x', ylab = 'y')
-	  lines(fit1$xgrid, fit1$wbeta$mean[1] + fit1$fxgrid$mean, lwd=2, col=2)
-	  lines(fit2$xgrid, fit2$wbeta$mean[1] + fit2$fxgrid$mean, lwd=2, col=3)
-	  lines(fit3$xgrid, fit3$wbeta$mean[1] + fit3$fxgrid$mean, lwd=2, col=4)
-	  legend('topleft',legend=c('1st Quartile','2nd Quartile','3rd Quartile'),
-	         lwd=2, col=2:4, lty=1)
+# plots
+plot(x, y, lwd = 2, xlab = 'x', ylab = 'y')
+lines(fit1$xgrid, fit1$wbeta$mean[1] + fit1$fxgrid$mean, lwd=2, col=2)
+lines(fit2$xgrid, fit2$wbeta$mean[1] + fit2$fxgrid$mean, lwd=2, col=3)
+lines(fit3$xgrid, fit3$wbeta$mean[1] + fit3$fxgrid$mean, lwd=2, col=4)
+legend('topleft',legend=c('1st Quartile','2nd Quartile','3rd Quartile'),
+       lwd=2, col=2:4, lty=1)
 
 }
 }

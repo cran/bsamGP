@@ -10,7 +10,7 @@
 
 \usage{
 
-bsar(y, w, x, xmin, xmax, nbasis, nint, mcmc = list(), prior = list(),
+bsar(formula, xmin, xmax, nbasis, nint, mcmc = list(), prior = list(),
 shape = c('Free', 'Increasing', 'Decreasing', 'IncreasingConvex', 'DecreasingConcave',
 'IncreasingConcave', 'DecreasingConvex', 'IncreasingS', 'DecreasingS',
 'IncreasingRotatedS','DecreasingRotatedS','InvertedU','Ushape'),
@@ -18,13 +18,7 @@ marginal.likelihood = TRUE, spm.adequacy = FALSE)
 }
 
 \arguments{
-  \item{y}{			a vector of response values.}
-
-  \item{w}{			a vector or matrix giving covariates of dimension \code{n} times \code{ndimw}
-				excluding intercept for a parametric component (w can be omitted)}
-
-  \item{x}{			a vector or matrix giving covariates of dimension \code{n} times \code{K}
-				for nonparametric components.}
+  \item{formula}{		an object of class \dQuote{\code{\link{formula}}} }
 
   \item{xmin}{		a vector or scalar giving user-specific minimum values of x.
   				The default values are minimum values of x.}
@@ -162,82 +156,111 @@ Newton, M. A. and Raftery, A. E. (1994) Approximate Bayesian inference with the 
 }
 
 \examples{
+\dontshow{
+  # Toy Example
+# simulate data
+f <- function(x) 5*exp(-10*(x - 1)^4) + 5*x^2
+
+set.seed(1)
+
+n <- 100
+x <- runif(n)
+y <- f(x) + rnorm(n, sd = 1)
+
+# Number of cosine basis functions
+nbasis <- 20
+
+# Fit the model with default priors and mcmc parameters
+fout <- bsar(y ~ fs(x), nbasis = nbasis, shape = 'Free')
+
+# Summary
+print(fout); summary(fout)
+
+# Trace plots
+plot(fout)
+
+# fitted values
+fit <- fitted(fout)
+
+# Plot
+plot(fit, ask = FALSE)
+}
+
 \dontrun{
 
-	##########################################
-	# Increasing Convex to Concave (S-shape) #
-	##########################################
+##########################################
+# Increasing Convex to Concave (S-shape) #
+##########################################
 
-	# simulate data
-	  f <- function(x) 5*exp(-10*(x - 1)^4) + 5*x^2
+# simulate data
+f <- function(x) 5*exp(-10*(x - 1)^4) + 5*x^2
 
-	  set.seed(1)
+set.seed(1)
 
-	  n <- 100
-	  x <- runif(n)
-	  y <- f(x) + rnorm(n, sd = 1)
+n <- 100
+x <- runif(n)
+y <- f(x) + rnorm(n, sd = 1)
 
-	  # Number of cosine basis functions
-	  nbasis <- 50
+# Number of cosine basis functions
+nbasis <- 50
 
-	  # Fit the model with default priors and mcmc parameters
-	  fout <- bsar(y = y, x = x, nbasis = nbasis, shape = 'IncreasingConvex',
-	               spm.adequacy = TRUE)
+# Fit the model with default priors and mcmc parameters
+fout <- bsar(y ~ fs(x), nbasis = nbasis, shape = 'IncreasingConvex',
+             spm.adequacy = TRUE)
 
-	  # Summary
-	  print(fout)
+# Summary
+print(fout); summary(fout)
 
-	  # Trace plots
-	  plot(fout)
+# Trace plots
+plot(fout)
 
-	  # fitted values
-	  fit <- fitted(fout)
+# fitted values
+fit <- fitted(fout)
 
-	  # Plot
-	  plot(fit)
+# Plot
+plot(fit, ask = TRUE)
 
-	#############################################
-	# Additive Model                            #
-	# Monotone-Increasing and Increasing-Convex #
-	#############################################
+#############################################
+# Additive Model                            #
+# Monotone-Increasing and Increasing-Convex #
+#############################################
 
-	# Simulate data
-	  f1 <- 2*pi*x + sin(2*pi*x)
-	  f2 <- exp(6*x - 3)
+# Simulate data
+f1 <- function(x) 2*pi*x + sin(2*pi*x)
+f2 <- function(x) exp(6*x - 3)
 
-	  n <- 200
-	  x1 <- runif(n)
-	  x2 <- runif(n)
-	  x <- cbind(x1, x2)
+n <- 200
+x1 <- runif(n)
+x2 <- runif(n)
+x <- cbind(x1, x2)
 
-	  y <- 5 + f1(x1) + f2(x2) + rnorm(n, sd = 0.5)
+y <- 5 + f1(x1) + f2(x2) + rnorm(n, sd = 0.5)
 
-	  # Number of cosine basis functions
-	  nbasis <- 50
+# Number of cosine basis functions
+nbasis <- 50
 
-	  # MCMC parameters
-	  mcmc <- list(nblow0 = 1000, nblow = 10000, nskip = 10,
-	               smcmc = 5000, ndisp = 1000, maxmodmet = 10)
+# MCMC parameters
+mcmc <- list(nblow0 = 1000, nblow = 10000, nskip = 10,
+             smcmc = 5000, ndisp = 1000, maxmodmet = 10)
 
-	  # Prior information
-	  xmin <- apply(x, 2, min)
-	  xmax <- apply(x, 2, max)
-	  xrange <- xmax - xmin
-	  prior <- list(iflagprior = 0, theta0_m0 = 0, theta0_s0 = 100,
-	                tau2_m0 = 1, tau2_v0 = 100, w0 = 2,
-	                beta_m0 = numeric(nparw), beta_v0 = diag(100,nparw),
-	                sigma2_m0 = 1, sigma2_v0 = 1000,
-	                alpha_m0 = 3, alpha_s0 = 50, iflagpsi = 1,
-	                psifixed = 1000, omega_m0 = (xmin + xmax)/2,
-	                omega_s0 = (xrange)/8)
+# Prior information
+xmin <- apply(x, 2, min)
+xmax <- apply(x, 2, max)
+xrange <- xmax - xmin
+prior <- list(iflagprior = 0, theta0_m0 = 0, theta0_s0 = 100,
+              tau2_m0 = 1, tau2_v0 = 100, w0 = 2,
+              beta_m0 = numeric(1), beta_v0 = diag(100,1),
+              sigma2_m0 = 1, sigma2_v0 = 1000,
+              alpha_m0 = 3, alpha_s0 = 50, iflagpsi = 1,
+              psifixed = 1000, omega_m0 = (xmin + xmax)/2,
+              omega_s0 = (xrange)/8)
 
-	  # Fit the model with user specific priors and mcmc parameters
-	  fout <- bsar(y = y, x = x, nbasis = nbasis, mcmc = mcmc, prior = prior,
-	               shape = c('Increasing', 'IncreasingS'))
+# Fit the model with user specific priors and mcmc parameters
+fout <- bsar(y ~ fs(x1) + fs(x2), nbasis = nbasis, mcmc = mcmc, prior = prior,
+             shape = c('Increasing', 'IncreasingS'))
 
-	  # Summary
-	  print(fout)
-
+# Summary
+print(fout); summary(fout)
 }
 }
 

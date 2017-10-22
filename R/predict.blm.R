@@ -1,7 +1,17 @@
-"fitted.blm" <- function(object, alpha = 0.05, HPD = TRUE, ...) {
+"predict.blm" <- function(object, newdata, alpha = 0.05, HPD = TRUE, ...) {
   smcmc <- object$mcmc$smcmc
-  wbg <- object$fit.draws$wbeta
-  n <- object$n
+  if (missing(newdata) || is.null(newdata)) {
+    wbg <- object$fit.draws$wbeta
+    newdata <- object$w
+  } else {
+    if (is.matrix(newdata)) {
+      newdata <- as.matrix(newdata)
+    }
+    newdata <- cbind(1, newdata)
+    colnames(newdata) <- object$wnames
+    wbg <- object$mcmc.draws$beta %*% t(newdata)
+  }
+  n <- nrow(newdata)
 
   wbeta <- list()
   wbm <- apply(wbg, 2, mean)
@@ -19,7 +29,7 @@
     wbeta$lower <- apply(wbg, 2, function(x) quantile(x, prob = alpha/2))
     wbeta$upper <- apply(wbg, 2, function(x) quantile(x, prob = 1 - alpha/2))
   }
-  
+
   if (object$model == 'gblr') {
     yhat <- list()
     if (object$link == 'log') {
@@ -38,13 +48,18 @@
     }
   }
 
-  out <- object
+  out <- list()
   out$alpha <- alpha
-  out$HPD <- HPD
+  out$newdata <- newdata
+  out$n <- n
   out$wbeta <- wbeta
+  if (object$model == 'blq')
+    out$p <- object$p
   if (object$model == 'gblr') {
     out$yhat <- yhat
+    out$family <- object$family
+    out$link <- object$link
   }
-  class(out) <- "fitted.blm"
+  class(out) <- "predict.blm"
   out
 }

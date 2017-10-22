@@ -10,21 +10,15 @@
 
 \usage{
 
-gbsar(y, w, x, xmin, xmax, n, family, link, nbasis, nint, mcmc = list(), prior = list(),
+gbsar(formula, xmin, xmax, family, link, nbasis, nint, mcmc = list(), prior = list(),
 shape = c('Free','Increasing','Decreasing','IncreasingConvex','DecreasingConcave',
           'IncreasingConcave','DecreasingConvex','IncreasingS','DecreasingS',
           'IncreasingRotatedS','DecreasingRotatedS','InvertedU','Ushape'),
-marginal.likelihood = TRUE)
+marginal.likelihood = TRUE, algorithm = c('AM', 'KS'))
 }
 
 \arguments{
-  \item{y}{			a vector of response values.}
-
-  \item{w}{			a vector or matrix giving covariates of dimension \code{n} times \code{ndimw}
-				excluding intercept for a parametric component (w can be omitted)}
-
-  \item{x}{			a vector or matrix giving covariates of dimension \code{n} times \code{K}
-				for nonparametric components.}
+  \item{formula}{		an object of class \dQuote{\code{\link{formula}}} }
 
   \item{xmin}{		a vector or scalar giving user-specific minimum values of x.
   				The default values are minimum values of x.}
@@ -32,10 +26,8 @@ marginal.likelihood = TRUE)
   \item{xmax}{		a vector or scalar giving user-specific maximum values of x.
   				The default values are maximum values of x.}
 
-  \item{n}{			an integer vector containing the number of trials for binomial data. }
-
   \item{family}{		a description of the error distribution to be used in the model:
-				The families contains bernoulli (\dQuote{bernoulli}), poisson (\dQuote{poisson}),
+				The family contains bernoulli (\dQuote{bernoulli}), poisson (\dQuote{poisson}),
 				negative-binomial (\dQuote{negative.binomial}), poisson-gamma mixture (\dQuote{poisson.gamma}). }
 
   \item{link}{			a description of the link function to be used in the model. }
@@ -81,6 +73,10 @@ marginal.likelihood = TRUE)
 
   \item{marginal.likelihood}{	a logical variable indicating whether the log marginal likelihood is calculated.
 				The methods of Gelfand and Dey (1994) and Newton and Raftery (1994) are used.}
+
+	\item{algorithm}{ a description of the algorithm to be used in the fitting of the logistic model:
+	      The algorithm contains the Gibbs sampler based on the Kolmogorov-Smirnov distribution (\code{KS})
+	      and an adaptive Metropolis algorithm (\code{AM}).}
 
 }
 
@@ -170,69 +166,116 @@ Gelfand, A. E. and Dey, K. K. (1994) Bayesian model choice: asymptotics and exac
 Newton, M. A. and Raftery, A. E. (1994) Approximate Bayesian inference with the weighted likelihood bootstrap (with discussion).
 	\emph{Journal of the Royal Statistical Society. Series B - Statistical Methodology}, \bold{56}, 3-48.
 
+Roberts, G. O. and Rosenthal, J. S. (2009) Examples of Adaptive MCMC. \emph{Journal of Computational and Graphical Statistics}, \bold{18}, 349-367.
+
 }
 
 \examples{
 \dontrun{
-	###########################
-	# Probit Regression Model #
-	###########################
+###########################
+# Probit Regression Model #
+###########################
 
-	# Simulate data
-	  set.seed(1)
+# Simulate data
+set.seed(1)
 
-	  n <- 100
-	  x <- runif(n)
-	  y <- log(1 + 10*x) + rnorm(n, sd = 1)
+f <- function(x) 1.5 * sin(pi * x)
 
-	  # Number of cosine basis functions
-	  nbasis <- 50
+n <- 1000
+b <- c(1,-1)
+rho <- 0.7
+u  <- runif(n, min = -1, max = 1)
+x  <- runif(n, min = -1, max = 1)
+w1 <- runif(n, min = -1, max = 1)
+w2 <- round(f(rho * x + (1 - rho) * u))
+w  <- cbind(w1, w2)
 
-	  # Fit the model with default priors and mcmc parameters
-	  fout <- gbsar(y = y, x = x, family = binomial(link = "probit"),
-	                nbasis = nbasis, shape = 'IncreasingConcave')
+y  <- w \%*\% b + f(x) + rnorm(n)
+y <- (y > 0)
 
-	  # Summary
-	  print(fout)
+# Number of cosine basis functions
+nbasis <- 50
 
-	  # fitted values
-	  fit=fitted(fout)
+# Fit the model with default priors and mcmc parameters
+fout <- gbsar(y ~ w1 + w2 + fs(x), family = "bernoulli", link = "probit",
+              nbasis = nbasis, shape = 'Free')
 
-	  # Plot
-	  plot(fit,'topleft',ask=TRUE)
+# Summary
+print(fout); summary(fout)
 
-	######################################
-	# Logistic Additive Regression Model #
-	######################################
+# fitted values
+fit <- fitted(fout)
 
-	# Wage-Union data
-	  data(wage.union); attach(wage.union)
+# Plot
+plot(fit, ask = TRUE)
 
-	  race[race==1 | race==2]=0
-	  race[race==3]=1
+######################################
+# Logistic Additive Regression Model #
+######################################
 
-	  y <- union
-	  w <- cbind(race,sex,south)
-	  x <- cbind(wage,education,age)
+# Wage-Union data
+data(wage.union); attach(wage.union)
 
-	  # mcmc parameters
-	  mcmc <- list(blow0 = 10000,
-	               blow = 10000,
-	               nskip = 10,
-	               smcmc = 1000,
-	               ndisp = 1000,
-	               maxmodmet = 10)
+race[race==1 | race==2]=0
+race[race==3]=1
 
-	  foutGBSAR <- gbsar(y = y, w = w, x = x, family = 'binomial',
-	                     link = 'logit', nbasis = 50, mcmc = mcmc,
-                       shape = c('Free','Decreasing','Increasing'))
+y <- union
+w <- cbind(race,sex,south)
+x <- cbind(wage,education,age)
 
-	  # fitted values
-	  fitGBSAR <- fitted(foutGBSAR)
+# mcmc parameters
+mcmc <- list(nblow0 = 10000,
+             nblow = 10000,
+             nskip = 10,
+             smcmc = 1000,
+             ndisp = 1000,
+             maxmodmet = 10)
 
-	  # Plot
-	  plot(fitGBSAR, ask = TRUE)
+foutGBSAR <- gbsar(y ~ race + sex + south + fs(wage) + fs(education) + fs(age),
+                   family = 'bernoulli', link = 'logit', nbasis = 50, mcmc = mcmc,
+                   shape = c('Free','Decreasing','Increasing'))
 
+# fitted values
+fitGBSAR <- fitted(foutGBSAR)
+
+# Plot
+plot(fitGBSAR, ask = TRUE)
+
+}
+\dontshow{
+  # Toy Example :  Probit Regression Model #
+# Simulate data
+set.seed(1)
+
+f <- function(x) 1.5 * sin(pi * x)
+
+n <- 100
+b <- c(1,-1)
+rho <- 0.7
+u  <- runif(n, min = -1, max = 1)
+x  <- runif(n, min = -1, max = 1)
+w1 <- runif(n, min = -1, max = 1)
+w2 <- round(f(rho * x + (1 - rho) * u))
+w  <- cbind(w1, w2)
+
+y  <- w \%*\% b + f(x) + rnorm(n)
+y <- (y > 0)
+
+# Number of cosine basis functions
+nbasis <- 10
+
+# Fit the model with default priors and mcmc parameters
+fout <- gbsar(y ~ w1 + w2 + fs(x), family = "bernoulli", link = "probit",
+              nbasis = nbasis, shape = 'Free')
+
+# Summary
+print(fout); summary(fout)
+
+# fitted values
+fit <- fitted(fout)
+
+# Plot
+plot(fit, ask = FALSE)
 }
 }
 

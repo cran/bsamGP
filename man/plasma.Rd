@@ -38,6 +38,10 @@ Meyer, M. C., Hackstadt, A. J., and Hoeting, J. A. (2011).
 	\emph{Journal of Nonparametric Statistics}, \bold{23}(4), 867-884.
 
 }
-\examples{data(plasma)}
+\examples{
+\dontrun{
+	data(plasma)
+}
+}
 
 \keyword{datasets}

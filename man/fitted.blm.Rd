@@ -5,8 +5,7 @@
   Computes pointwise posterior means and 95\% credible intervals of the fitted Bayesian linear models.
 }
 \usage{
-%fitted.blm(object, alpha = 0.05, HPD = TRUE, \dots)
-\method{fitted}{blm}(object, alpha = 0.05, HPD = TRUE, \dots)
+	\method{fitted}{blm}(object, alpha = 0.05, HPD = TRUE, \dots)
 }
 \arguments{
   \item{object}{ a \code{bsam} object}
@@ -25,14 +24,16 @@ None.
 \value{
 A list containing posterior means and 95\% credible intervals.
 
-The output list includes the following object:
+The output list includes the following objects:
 
 \item{wbeta}{	posterior estimates for regression function.}
+
+\item{yhat}{	posterior estimates for generalised regression function.}
 
 }
 
 \seealso{
-\code{\link{blq}}, \code{\link{blr}}
+\code{\link{blq}}, \code{\link{blr}}, \code{\link{gblr}}
 }
 
 \references{

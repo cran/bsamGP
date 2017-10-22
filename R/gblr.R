@@ -1,5 +1,17 @@
-"gblr" <- function(y, w, n, family, link, mcmc = list(), prior = list(), marginal.likelihood = TRUE) {
+"gblr" <- function(formula, data = NULL, family, link, mcmc = list(), prior = list(),
+                   marginal.likelihood = TRUE, algorithm = c("AM", "KS")) {
   cl <- match.call()
+
+  ywdata <- parse.formula(formula, data = data)
+  yobs <- ywdata[[1]]
+  yname <- ywdata[[2]]
+  wdata <- ywdata[[3]]
+  wnames <- ywdata[[4]]
+
+  nobs <- nrow(yobs)
+  nparw <- ncol(wdata)
+  ndimw <- nparw - 1
+
   if (family %in% c("bernoulli", "poisson", "negative.binomial", "poisson.gamma")) {
     if (link %in% c("probit", "logit", "log")) {
       if (family %in% c("poisson", "negative.binomial", "poisson.gamma") && link != "log") {
@@ -16,49 +28,21 @@
   }
 
   if (family == "bernoulli") {
-    chk <- unique(y)
+    chk <- unique(yobs)
     if (length(chk) != 2L) {
       stop("bernoulli models only allow binary responses")
     } else {
-      y <- factor(y, labels = 0:1)
-      y <- as.integer(paste(y))
+      yobs <- factor(yobs, labels = 0:1)
+      yobs <- as.integer(paste(yobs))
     }
   }
   if (family %in% c("poisson", "negative.binomial", "poisson.gamma")) {
-    chk <- (abs(y - round(y)) < .Machine$double.eps^0.5)
-    if (sum(chk) != length(y))
+    chk <- (abs(yobs - round(yobs)) < .Machine$double.eps^0.5)
+    if (sum(chk) != length(yobs))
       stop(paste(family, " model only allow count responses.", sep = ""))
   }
-
-  yobs <- y
-  yname <- names(yobs)
-  if (is.null(yname))
-    yname <- "y"
-  names(yobs) <- yname
-  nobs <- length(yobs)
-
-  wdata <- w
-  if (!is.matrix(wdata))
-    wdata <- as.matrix(wdata)
-  wnames <- colnames(wdata)
-  if (is.null(wnames))
-    wnames <- paste("w", 1:ncol(wdata), sep = "")
-  wdata <- cbind(1, wdata)
-  wnames <- c("const", wnames)
-  colnames(wdata) <- wnames
-  nparw <- ncol(wdata)
-  ndimw <- nparw - 1
-
-  if (missing(n)) {
-    n <- rep(1, nobs)
-  }
-  nmax <- max(n)
-  if (sum(n == 0) > 0) {
-    indices <- which(n == 0)
-    yobs <- yobs[-indices]
-    nobs <- length(yobs)
-    wdata <- wdata[-indices, ]
-    n <- n[-indices]
+  if (family == "bernoulli" && link == "logit") {
+    algorithm = match.arg(algorithm)
   }
 
   privals <- list(beta_m0 = numeric(nparw), beta_v0 = diag(100, nparw),
@@ -90,12 +74,21 @@
   }
   if (family == "bernoulli" && link == "logit") {
     betam <- glm(yobs ~ wdata - 1, family = binomial(link = logit))$coef
-    fout <- .Fortran("gblogitKS", as.integer(yobs), as.matrix(wdata),
-                     as.double(betam), as.double(beta_m0), as.matrix(beta_v0),
-                     as.integer(nobs), as.integer(nparw),
-                     as.integer(nblow), as.integer(nskip), as.integer(smcmc), as.integer(ndisp),
-                     betaps = matrix(0, smcmc, nparw), loglikeps = numeric(smcmc),
-                     logpriorps = numeric(smcmc), NAOK = TRUE, PACKAGE = "bsamGP")
+    if (algorithm == 'KS') {
+      fout <- .Fortran("gblogitKS", as.integer(yobs), as.matrix(wdata),
+                       as.double(betam), as.double(beta_m0), as.matrix(beta_v0),
+                       as.integer(nobs), as.integer(nparw),
+                       as.integer(nblow), as.integer(nskip), as.integer(smcmc), as.integer(ndisp),
+                       betaps = matrix(0, smcmc, nparw), loglikeps = numeric(smcmc),
+                       logpriorps = numeric(smcmc), NAOK = TRUE, PACKAGE = "bsamGP")
+    } else {
+      fout <- .Fortran("gblogitMH", as.integer(yobs), as.matrix(wdata),
+                       as.double(betam), as.double(beta_m0), as.matrix(beta_v0),
+                       as.integer(nobs), as.integer(nparw),
+                       as.integer(nblow), as.integer(nskip), as.integer(smcmc), as.integer(ndisp),
+                       betaps = matrix(0, smcmc, nparw), loglikeps = numeric(smcmc),
+                       logpriorps = numeric(smcmc), NAOK = TRUE, PACKAGE = "bsamGP")
+    }
   }
   if (family == "poisson") {
     glmfit <- glm(y ~ wdata - 1, family = poisson(link = log))
@@ -188,7 +181,6 @@
   res.out$family <- family
   res.out$link <- link
   res.out$y <- yobs
-  res.out$n <- n
   res.out$w <- wdata
   res.out$n <- nobs
   res.out$ndimw <- ndimw
@@ -211,6 +203,10 @@
   res.out$marglik <- marginal.likelihood
   if (marginal.likelihood) {
     res.out$lmarg <- lil[1]
+  }
+
+  if (family == 'bernoulli' && link == 'logit') {
+    res.out$algorithm <- algorithm
   }
 
   class(res.out) <- "blm"

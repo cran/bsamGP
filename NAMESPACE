@@ -8,11 +8,11 @@ export(
   bsaqdpm,
   bsar,
   bsardpm,
-  function.shape,
   gblr,
   gbsar,
   intsim,
-  rald
+  rald,
+  fs
 )
 
 ## import other packages
@@ -21,26 +21,40 @@ importFrom("MASS", "glm.nb")
 importFrom("gridExtra", "grid.arrange")
 importFrom("grDevices", "dev.new")
 importFrom("graphics", "barplot", "hist", "lines", "par", "rug",
-           "title", "plot")
+           "title", "plot", "points", "polygon")
 importFrom("stats", "binomial", "cor", "cov", "density", "glm",
-           "pnorm", "poisson", "quantile", "rgamma", "runif", "sd",
+           "pnorm", "poisson", "quantile", "rgamma", "runif", "rexp", "rnorm", "sd",
            "vcov", "median")
+importFrom("stats", "contrasts", "is.empty.model", "model.matrix",
+            "model.response")
 
 ## register S3 methods
 S3method(fitted, blm)
 S3method(plot, blm)
 S3method(print, blm)
+S3method(summary, blm)
+S3method(print, summary.blm)
+S3method(predict, blm)
 
 S3method(fitted, bsad)
-S3method(print, bsad)
+S3method(plot, bsad)
 S3method(plot, fitted.bsad)
+S3method(print, bsad)
+S3method(summary, bsad)
+S3method(print, summary.bsad)
 
 S3method(fitted, bsam)
 S3method(plot, bsam)
 S3method(plot, fitted.bsam)
 S3method(print, bsam)
+S3method(summary, bsam)
+S3method(print, summary.bsam)
+S3method(predict, bsam)
 
 S3method(fitted, bsamdpm)
 S3method(plot, bsamdpm)
 S3method(plot, fitted.bsamdpm)
 S3method(print, bsamdpm)
+S3method(summary, bsamdpm)
+S3method(print, summary.bsamdpm)
+S3method(predict, bsamdpm)
