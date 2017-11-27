@@ -28,11 +28,11 @@ subroutine intxgrid(xobs,xmin,xmax,xgrid,nobs,nint,xinxgrid,xidelta)
 
   ! input arguments
   integer,intent(in) :: nobs,nint
-  real(8), intent(in) :: xobs(nobs),xmin,xmax,xgrid(nint+1)
+  real(8),intent(in) :: xobs(nobs),xmin,xmax,xgrid(nint+1)
 
   ! output arguments
   integer,intent(out) :: xinxgrid(nobs)
-  real(8), intent(out) :: xidelta(nobs)
+  real(8),intent(out) :: xidelta(nobs)
 
   ! internal arguments
   integer :: iobs,iint,s(nint+1),szbot

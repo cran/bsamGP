@@ -77,7 +77,7 @@ intsimpfacts(nint+1)=1
 do iloop=2,nint,2
   intsimpfacts(iloop)=4
 end do
-do iloop=3,nint-1,2
+do iloop=3,nint,2
   intsimpfacts(iloop)=2
 end do
 

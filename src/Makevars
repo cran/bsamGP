@@ -6,7 +6,7 @@ FSRC = blreg.f90 bqreg.f90 bqreggetlogg.f90 bsad.f90 bsaqam.f90 bsaqamdpscale.f9
 	bsaram.f90 bsaramdplocationscale.f90 bsaramdpscale.f90 bsaramgetlogg.f90 \
 	gbglmgetlogg.f90 gblogitKS.f90 gblogitMH.f90 gbnegbinMH.f90 gbpoisgammMH.f90 gbpoisMH.f90 gbprobitAC.f90 \
 	gbsaramgetlogg.f90 gbsarlogitKS.f90 gbsarlogitMH.f90 gbsarnegbinMH.f90 gbsarpoisgammMH.f90 gbsarpoisMH.f90 gbsarprobitAC.f90 \
-	predictbsam.f90
+	predictgbsam.f90 predictbsam.f90
 
 # Define the order of compilation
 OBJECTS = $(CSRC:.c=.o) $(FMODSRC:.f90=.o) $(FSRC:.f90=.o)
@@ -40,4 +40,5 @@ gbsarnegbinMH.o : ToolsRfunf.o gbsamTools.o
 gbsarpoisgammMH.o : ToolsRfunf.o gbsamTools.o
 gbsarpoisMH.o : ToolsRfunf.o gbsamTools.o
 gbsarprobitAC.o : ToolsRfunf.o gbsamTools.o
-predictbsam.o : ToolsRfunf.o gbsamTools.o
+predictgbsam.o : ToolsRfunf.o gbsamTools.o
+predictbsam.o : ToolsRfunf.o bsamTools.o

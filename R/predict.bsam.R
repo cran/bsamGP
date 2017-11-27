@@ -25,16 +25,33 @@
     newp <- object$w
     if (!is.matrix(newnp))
       newnp <- as.matrix(newnp)
-    n <- object$n
-    if (n != nrow(newnp))
-      stop('The number of observations for both parametric and nonparametric components must be same.')
-    wbg <- object$fit.draws$wbeta
-    fxobsg <- .Fortran("predictbsam", as.matrix(newnp), as.double(xmin), as.double(xmax),as.integer(n),
-                       as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel),
-                       as.double(fpm), as.integer(smcmc), as.array(object$mcmc.draws$theta),
-                       as.matrix(object$mcmc.draws$alpha), as.matrix(object$mcmc.draws$psi),
-                       as.matrix(object$mcmc.draws$omega), fxobsg = array(0, dim = c(n, nfun, smcmc)),
-                       NAOK = TRUE, PACKAGE = "bsamGP")$fxobsg
+
+    if(ncol(newp)==1) {
+      # Constant only on parametric
+      n <- nrow(newnp)
+      newp <- matrix(1, nrow=n)
+      wbg <- tcrossprod(object$mcmc.draws$beta, newp)
+    } else {
+      n <- object$n
+      if (n != nrow(newnp))
+        stop('The number of observations for both parametric and nonparametric components must be same.')
+      wbg <- object$fit.draws$wbeta
+    }
+    if (object$model == 'gbsar') {
+      fxobsg <- .Fortran("predictgbsam", as.matrix(newnp), as.double(xmin), as.double(xmax),as.integer(n),
+                         as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel),
+                         as.double(fpm), as.integer(smcmc), as.array(object$mcmc.draws$theta),
+                         as.matrix(object$mcmc.draws$alpha), as.matrix(object$mcmc.draws$psi),
+                         as.matrix(object$mcmc.draws$omega), fxobsg = array(0, dim = c(n, nfun, smcmc)),
+                         NAOK = TRUE, PACKAGE = "bsamGP")$fxobsg
+    } else {
+      fxobsg <- .Fortran("predictbsam", as.matrix(newnp), as.double(xmin), as.double(xmax),as.integer(n),
+                         as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel),
+                         as.double(fpm), as.integer(smcmc), as.array(object$mcmc.draws$theta),
+                         as.matrix(object$mcmc.draws$alpha), as.matrix(object$mcmc.draws$psi),
+                         as.matrix(object$mcmc.draws$omega), fxobsg = array(0, dim = c(n, nfun, smcmc)),
+                         NAOK = TRUE, PACKAGE = "bsamGP")$fxobsg
+    }
     if (object$model == "gbsar") {
       if (object$link == 'probit') {
         yhatg <- pnorm(wbg + t(apply(fxobsg, c(1,3), sum)))
@@ -45,12 +62,9 @@
         yhatg <- exp(wbg + t(apply(fxobsg, c(1,3), sum)))
       }
     } else if (object$model == "bsaq") {
+      p <- object$p
     	if(type=="response") {
-    		p <- object$p
-    		eta1 <- (1 - 2*p) / (p * (1-p))
-    		eta22 <- 2/(p*(1-p))
-    		zg <- t(sapply(object$mcmc.draws$sigma, function(sigma) rexp(n, 1/sigma)))
-    		yhatg <- wbg + t(apply(fxobsg, c(1,3), sum)) + rnorm(n*smcmc, mean=eta1*zg, sd=sqrt(eta22*zg*object$mcmc.draws$sigma)) # Add error
+        yhatg <- wbg + t(apply(fxobsg, c(1,3), sum)) + t(sapply(object$mcmc.draws$sigma, function(sigma) rald(n, scale=sigma, p=p))) # Add error
     	} else {	# mean
     		yhatg <- wbg + t(apply(fxobsg, c(1,3), sum))
     	}
@@ -84,10 +98,7 @@
     } else if (object$model == "bsaq") {
     	if(type=="response") {
     		p <- object$p
-    		eta1 <- (1 - 2*p) / (p * (1-p))
-    		eta22 <- 2/(p*(1-p))
-    		zg <- t(sapply(object$mcmc.draws$sigma, function(sigma) rexp(n, 1/sigma)))
-    		yhatg <- wbg + t(apply(fxobsg, c(1,3), sum)) + rnorm(n*smcmc, mean=eta1*zg, sd=sqrt(eta22*zg*object$mcmc.draws$sigma)) # Add error
+    		yhatg <- wbg + t(apply(fxobsg, c(1,3), sum)) + t(sapply(object$mcmc.draws$sigma, function(sigma) rald(n, scale=sigma, p=p))) # Add error
     	} else {	# mean
     		yhatg <- wbg + t(apply(fxobsg, c(1,3), sum))
       	}
@@ -108,12 +119,21 @@
       stop('The number of observations for both parametric and nonparametric components must be same.')
     n <- nrow(newp)
     wbg <- object$mcmc.draws$beta %*% t(newp)
-    fxobsg <- .Fortran("predictbsam", as.matrix(newnp), as.double(xmin), as.double(xmax),as.integer(n),
-                       as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel),
-                       as.double(fpm), as.integer(smcmc), as.array(object$mcmc.draws$theta),
-                       as.matrix(object$mcmc.draws$alpha), as.matrix(object$mcmc.draws$psi),
-                       as.matrix(object$mcmc.draws$omega), fxobsg = array(0, dim = c(n, nfun, smcmc)),
-                       NAOK = TRUE, PACKAGE = "bsamGP")$fxobsg
+    if (object$model == 'gbsar') {
+      fxobsg <- .Fortran("predictgbsam", as.matrix(newnp), as.double(xmin), as.double(xmax),as.integer(n),
+                         as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel),
+                         as.double(fpm), as.integer(smcmc), as.array(object$mcmc.draws$theta),
+                         as.matrix(object$mcmc.draws$alpha), as.matrix(object$mcmc.draws$psi),
+                         as.matrix(object$mcmc.draws$omega), fxobsg = array(0, dim = c(n, nfun, smcmc)),
+                         NAOK = TRUE, PACKAGE = "bsamGP")$fxobsg
+    } else {
+      fxobsg <- .Fortran("predictbsam", as.matrix(newnp), as.double(xmin), as.double(xmax),as.integer(n),
+                         as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel),
+                         as.double(fpm), as.integer(smcmc), as.array(object$mcmc.draws$theta),
+                         as.matrix(object$mcmc.draws$alpha), as.matrix(object$mcmc.draws$psi),
+                         as.matrix(object$mcmc.draws$omega), fxobsg = array(0, dim = c(n, nfun, smcmc)),
+                         NAOK = TRUE, PACKAGE = "bsamGP")$fxobsg
+    }
 
     if (object$model == "gbsar") {
       	if (object$link == 'probit') {
@@ -125,12 +145,9 @@
       	  yhatg <- exp(wbg + t(apply(fxobsg, c(1,3), sum)))
       	}
     } else if (object$model == "bsaq") {
+      p <- object$p
     	if(type=="response") {
-    		p <- object$p
-    		eta1 <- (1 - 2*p) / (p * (1-p))
-    		eta22 <- 2/(p*(1-p))
-    		zg <- t(sapply(object$mcmc.draws$sigma, function(sigma) rexp(n, 1/sigma)))
-    		yhatg <- wbg + t(apply(fxobsg, c(1,3), sum)) + rnorm(n*smcmc, mean=eta1*zg, sd=sqrt(eta22*zg*object$mcmc.draws$sigma)) # Add error
+    		yhatg <- wbg + t(apply(fxobsg, c(1,3), sum)) + t(sapply(object$mcmc.draws$sigma, function(sigma) rald(n, scale=sigma, p=p))) # Add error
     	} else {	# mean
     		yhatg <- wbg + t(apply(fxobsg, c(1,3), sum))
       }
@@ -160,7 +177,7 @@
   for (i in 1:nfun) {
     fxResidg[,i,] <- t(yhatg - wbg) - apply(fxobsg[,-i,,drop=FALSE], c(1,3), sum)
   }
-  
+
   fxResid <- list()
   fxResid$mean <- apply(fxResidg, c(1, 2), mean)
 
@@ -219,7 +236,7 @@
     ## Parametric Residual ##
     fxResid$lower <- apply(fxResidg, c(1, 2), function(x) quantile(x, prob = alpha/2))
     fxResid$upper <- apply(fxResidg, c(1, 2), function(x) quantile(x, prob = 1 - alpha/2))
-    ##    
+    ##
   }
 
   out <- list()
