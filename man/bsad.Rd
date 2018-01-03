@@ -11,7 +11,8 @@
 
 bsad(x, xmin, xmax, nint, MaxNCos, mcmc = list(), prior = list(),
 smoother = c('geometric', 'algebraic'),
-parametric = c('none', 'normal', 'gamma', 'laplace'), marginal.likelihood = TRUE)
+parametric = c('none', 'normal', 'gamma', 'laplace'), marginal.likelihood = TRUE,
+verbose = FALSE)
 }
 
 \arguments{
@@ -50,8 +51,9 @@ parametric = c('none', 'normal', 'gamma', 'laplace'), marginal.likelihood = TRUE
 
   \item{parametric}{		specifying a distribution of the parametric part to be test.}
 
-  \item{marginal.likelihood}{	a logical variable indicating whether the log marginal likelihood is calculated.}
+  \item{marginal.likelihood}{	  a logical variable indicating whether the log marginal likelihood is calculated.}
 
+  \item{verbose}{   a logical variable. If \code{TRUE}, the iteration number and the Metropolis acceptance rate are printed to the screen.}
 
 }
 
@@ -120,7 +122,7 @@ mcmc <- list(nblow = 100,
              ndisp = 100,
              kappaloop = 1)
 
-# fits BSAD model 
+# fits BSAD model
 fout <- bsad(x = x, xmin = 0, xmax = 10, nint = 501, mcmc = mcmc,
             smoother = 'geometric', parametric = 'gamma')
 

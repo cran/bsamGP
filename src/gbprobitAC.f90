@@ -1,11 +1,11 @@
-subroutine gbprobitAC(yobs,dobs,init_beta,beta_m0,beta_v0,nobs,npar, &
+subroutine gbprobitAC(verbose,yobs,dobs,init_beta,beta_m0,beta_v0,nobs,npar, &
                       nburn,nthin,npost,ndisp,betaps,loglikeps,logpriorps)
 use ToolsRfunf
 implicit none
 
 ! input arguments
 integer,intent(in) :: nobs,npar,nburn,nthin,npost,ndisp
-integer,intent(in) :: yobs(nobs)
+integer,intent(in) :: yobs(nobs),verbose
 real(8), intent(in) :: dobs(nobs,npar)
 real(8), intent(in) :: init_beta(npar),beta_m0(npar),beta_v0(npar,npar)
 
@@ -39,9 +39,13 @@ Dbeta=matmul(dobs,beta)
 
 nmcmc=nburn+nthin*npost
 isave=1
-call dblepr('Burnin ...',-1,1.d0,0)
+if (verbose.eq.1) then
+  call dblepr('Burnin ...',-1,1.d0,0)
+end if
 do imcmc=1,nmcmc
-  if(imcmc.eq.nburn+1) call dblepr('Main iterations ...',-1,1.d0,0)
+  if (verbose.eq.1) then
+    if(imcmc.eq.nburn+1) call dblepr('Main iterations ...',-1,1.d0,0)
+  end if
 
   call rchkusr() ! check interrupt
 
@@ -70,9 +74,11 @@ do imcmc=1,nmcmc
     end do
     loglikeps(isave)=loglik
 
-    if (mod(isave,ndisp).eq.0) then
-      call cpu_time(itime)
-      call sprint(isave,npost,itime-stime)
+    if (verbose.eq.1) then
+      if (mod(isave,ndisp).eq.0) then
+        call cpu_time(itime)
+        call sprint(isave,npost,itime-stime)
+      end if
     end if
 
     isave=isave+1

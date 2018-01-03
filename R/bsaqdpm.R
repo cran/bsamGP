@@ -1,7 +1,8 @@
 "bsaqdpm" <- function(formula, xmin, xmax, p, nbasis, nint, mcmc = list(), prior = list(), egrid, ngrid = 500,
                       shape = c("Free", "Increasing", "Decreasing", "IncreasingConvex", "DecreasingConcave",
                                 "IncreasingConcave", "DecreasingConvex", "IncreasingS", "DecreasingS",
-                                "IncreasingRotatedS", "DecreasingRotatedS", "InvertedU", "Ushape")) {
+                                "IncreasingRotatedS", "DecreasingRotatedS", "InvertedU", "Ushape"),
+                      verbose = FALSE) {
   cl <- match.call()
 
   if (missing(p)) {
@@ -106,7 +107,7 @@
     maxmodmet <- 0
 
   mcmctime <- system.time({
-    foo <- .Fortran("bsaqamdpscale", as.double(yobs), as.matrix(wdata), as.matrix(xobs), as.double(egrid), as.integer(nobs),
+    foo <- .Fortran("bsaqamdpscale", as.integer(verbose), as.double(yobs), as.matrix(wdata), as.matrix(xobs), as.double(egrid), as.integer(nobs),
                     as.integer(ngrid), as.integer(nparw), as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel),
                     as.double(fpm), as.double(p), as.double(theta0_m0), as.double(theta0_s0), as.double(tau2_m0), as.double(tau2_v0),
                     as.double(w0), as.double(beta_m0), as.matrix(beta_v0), as.double(alpha_m0), as.double(alpha_s0), as.double(psi_m0),

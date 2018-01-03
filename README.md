@@ -28,5 +28,6 @@
 		* Add S3methods : predict, summary
 		* Clean plot method.
 
-	* v1.1.1
+	* v1.1.1 -- 1.1.2
 		* Separate predictbsam & predictgbsam : BUGFIX
+		* Add verbose option.

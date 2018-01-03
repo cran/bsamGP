@@ -2,7 +2,7 @@
                     shape = c("Free", "Increasing", "Decreasing", "IncreasingConvex", "DecreasingConcave",
                               "IncreasingConcave", "DecreasingConvex", "IncreasingS", "DecreasingS",
                               "IncreasingRotatedS", "DecreasingRotatedS", "InvertedU", "Ushape"),
-                    marginal.likelihood = TRUE, algorithm = c("AM", "KS")) {
+                    marginal.likelihood = TRUE, algorithm = c("AM", "KS"), verbose = FALSE) {
   cl <- match.call()
 
   ywxdata <- interpret.bsam(formula)
@@ -122,7 +122,7 @@
 
   stime <- proc.time()
   if (family == "bernoulli" && link == "probit") {
-    foo <- .Fortran("gbsarprobitAC", as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
+    foo <- .Fortran("gbsarprobitAC", as.integer(verbose), as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
                     as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel), as.double(fpm), as.double(theta0_m0),
                     as.double(theta0_s0), as.double(tau2_m0), as.double(tau2_v0), as.double(w0), as.double(beta_m0), as.matrix(beta_v0),
                     as.double(alpha_m0), as.double(alpha_s0), as.double(psi_m0), as.double(psi_s0), as.double(psifixed), as.double(omega_m0),
@@ -136,7 +136,7 @@
   }
   if (family == "bernoulli" && link == "logit") {
     if (algorithm == "KS") {
-      foo <- .Fortran("gbsarlogitKS", as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
+      foo <- .Fortran("gbsarlogitKS", as.integer(verbose), as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
                       as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel), as.double(fpm), as.double(theta0_m0),
                       as.double(theta0_s0), as.double(tau2_m0), as.double(tau2_v0), as.double(w0), as.double(beta_m0), as.matrix(beta_v0),
                       as.double(alpha_m0), as.double(alpha_s0), as.double(psi_m0), as.double(psi_s0), as.double(psifixed), as.double(omega_m0),
@@ -148,7 +148,7 @@
                       wbg = matrix(0, smcmc, nobs), loglikeg = numeric(smcmc), logpriorg = numeric(smcmc), imodmetg = as.integer(numeric(1)),
                       pmetg = numeric(nfun), NAOK = TRUE, PACKAGE = "bsamGP")
     } else {
-      foo <- .Fortran("gbsarlogitMH", as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
+      foo <- .Fortran("gbsarlogitMH", as.integer(verbose), as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
                       as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel), as.double(fpm), as.double(theta0_m0),
                       as.double(theta0_s0), as.double(tau2_m0), as.double(tau2_v0), as.double(w0), as.double(beta_m0), as.matrix(beta_v0),
                       as.double(alpha_m0), as.double(alpha_s0), as.double(psi_m0), as.double(psi_s0), as.double(psifixed), as.double(omega_m0),
@@ -162,7 +162,7 @@
     }
   }
   if (family == "poisson") {
-    foo <- .Fortran("gbsarpoisMH", as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
+    foo <- .Fortran("gbsarpoisMH", as.integer(verbose), as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
                     as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel), as.double(fpm), as.double(theta0_m0),
                     as.double(theta0_s0), as.double(tau2_m0), as.double(tau2_v0), as.double(w0), as.double(beta_m0), as.matrix(beta_v0),
                     as.double(alpha_m0), as.double(alpha_s0), as.double(psi_m0), as.double(psi_s0), as.double(psifixed), as.double(omega_m0),
@@ -175,7 +175,7 @@
                     pmetg = numeric(nfun), NAOK = TRUE, PACKAGE = "bsamGP")
   }
   if (family == "negative.binomial") {
-    foo <- .Fortran("gbsarnegbinMH", as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
+    foo <- .Fortran("gbsarnegbinMH", as.integer(verbose), as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
                     as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel), as.double(fpm), as.double(theta0_m0),
                     as.double(theta0_s0), as.double(tau2_m0), as.double(tau2_v0), as.double(w0), as.double(beta_m0), as.matrix(beta_v0),
                     as.double(alpha_m0), as.double(alpha_s0), as.double(psi_m0), as.double(psi_s0), as.double(psifixed), as.double(omega_m0),
@@ -189,7 +189,7 @@
                     NAOK = TRUE, PACKAGE = "bsamGP")
   }
   if (family == "poisson.gamma") {
-    foo <- .Fortran("gbsarpoisgammMH", as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
+    foo <- .Fortran("gbsarpoisgammMH", as.integer(verbose), as.integer(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
                     as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel), as.double(fpm), as.double(theta0_m0),
                     as.double(theta0_s0), as.double(tau2_m0), as.double(tau2_v0), as.double(w0), as.double(beta_m0), as.matrix(beta_v0),
                     as.double(alpha_m0), as.double(alpha_s0), as.double(psi_m0), as.double(psi_s0), as.double(psifixed), as.double(omega_m0),

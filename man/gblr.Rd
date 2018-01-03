@@ -9,7 +9,7 @@
 \usage{
 
 gblr(formula, data = NULL, family, link, mcmc = list(), prior = list(),
-marginal.likelihood = TRUE, algorithm = c('AM', 'KS'))
+marginal.likelihood = TRUE, algorithm = c('AM', 'KS'), verbose = FALSE)
 }
 
 \arguments{
@@ -45,6 +45,8 @@ marginal.likelihood = TRUE, algorithm = c('AM', 'KS'))
 	\item{algorithm}{ a description of the algorithm to be used in the fitting of the logistic model:
 	      The algorithm contains the Gibbs sampler based on the Kolmogorov-Smirnov distribution (\code{KS})
 	      and an adaptive Metropolis  algorithm (\code{AM}).}
+
+	 \item{verbose}{ a logical variable. If \code{TRUE}, the iteration number and the Metropolis acceptance rate are printed to the screen.}
 
 }
 

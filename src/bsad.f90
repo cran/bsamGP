@@ -1,4 +1,4 @@
-subroutine bsad(nblow,smcmc,nskip,ndisp,kappaloop,nobs,nint,npar,MaxNCos,&
+subroutine bsad(verbose,nblow,smcmc,nskip,ndisp,kappaloop,nobs,nint,npar,MaxNCos,&
                 probk,cdfk,np,gmax,smooth,PriorProbs,nmodels,&
                 BetaVari0,BetaVariMean0,r0,s0,u0,v0,dmat,ddata,dtd,&
                 phi,phidata,ndata,xdelta,lnPriorKappa,cdfPriorKappa,KappaGrid,&
@@ -9,7 +9,7 @@ subroutine bsad(nblow,smcmc,nskip,ndisp,kappaloop,nobs,nint,npar,MaxNCos,&
 use ToolsRfunf
 implicit none
 
-integer,intent(in) :: nblow,smcmc,nskip,ndisp,nobs,npar,nint,MaxNCos,smooth
+integer,intent(in) :: verbose,nblow,smcmc,nskip,ndisp,nobs,npar,nint,MaxNCos,smooth
 integer,intent(in) :: kappaloop,np,nmodels,ndata(nint),KappaGrid(MaxNCos+1)
 real(8), intent(in) :: probk(np,np),cdfk(np,np),gmax
 real(8), intent(in) :: PriorProbs(nmodels),BetaVari0(npar,npar)
@@ -109,7 +109,9 @@ ExactLogLikeSemiMaxKappa=ExactLogLikeSemiMaxKappa-dble(nobs)*(c+dlog(yint))
 ExactLogLikeSemiOldMaxKappa=ExactLogLikeSemiMaxKappa
 ExactLogLikeSemiNewMaxKappa=ExactLogLikeSemiMaxKappa
 
-call dblepr('Burnin ...',-1,1.d0,0)
+if (verbose.eq.1) then
+  call dblepr('Burnin ...',-1,1.d0,0)
+end if
 MetProbPar=0
 MetProbSemi=0
 do imcmc=1,nblow
@@ -125,7 +127,9 @@ do imcmc=1,nblow
   end do
 end do
 
-call dblepr('Main iterations ...',-1,1.d0,0)
+if (verbose.eq.1) then
+  call dblepr('Main iterations ...',-1,1.d0,0)
+end if
 MetProbPar=0
 MetProbSemi=0
 isave=1
@@ -183,9 +187,11 @@ do imcmc=1,nmcmc
     fx=fx/fint
     fsemiMaxKappag(isave,:)=fx
 
-    if (mod(isave,ndisp).eq.0) then
-      call cpu_time(itime)
-      call sprint(isave,smcmc,itime-stime)
+    if (verbose.eq.1) then
+      if (mod(isave,ndisp).eq.0) then
+        call cpu_time(itime)
+        call sprint(isave,smcmc,itime-stime)
+      end if
     end if
     isave=isave+1
   end if

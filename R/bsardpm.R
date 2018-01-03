@@ -1,7 +1,8 @@
 "bsardpm" <- function(formula, xmin, xmax, nbasis, nint, mcmc = list(), prior = list(), egrid, ngrid, location = TRUE,
                       shape = c("Free", "Increasing", "Decreasing", "IncreasingConvex", "DecreasingConcave",
                                 "IncreasingConcave", "DecreasingConvex", "IncreasingS", "DecreasingS",
-                                "IncreasingRotatedS", "DecreasingRotatedS", "InvertedU", "Ushape")) {
+                                "IncreasingRotatedS", "DecreasingRotatedS", "InvertedU", "Ushape"),
+                      verbose = FALSE) {
   cl <- match.call()
 
   ywxdata <- interpret.bsam(formula)
@@ -103,7 +104,7 @@
 
   mcmctime <- system.time({
     if (location) {
-      foo <- .Fortran("bsaramdplocationscale", as.double(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs),
+      foo <- .Fortran("bsaramdplocationscale", as.integer(verbose), as.double(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs),
                       as.integer(nparw), as.integer(ndimw), as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel),
                       as.double(fpm), as.double(theta0_m0), as.double(theta0_s0), as.double(tau2_m0), as.double(tau2_v0), as.double(w0),
                       as.double(beta_m0), as.matrix(beta_v0), as.double(alpha_m0), as.double(alpha_s0), as.double(psi_m0), as.double(psi_s0),
@@ -119,7 +120,7 @@
                       edensg = matrix(0, nrow = smcmc, ncol = ngrid), invlikeg = matrix(0, nrow = smcmc, ncol = nobs),
                       imodmetg = as.integer(numeric(1)), pmetg = numeric(nfun), NAOK = TRUE, PACKAGE = "bsamGP")
     } else {
-      foo <- .Fortran("bsaramdpscale", as.double(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
+      foo <- .Fortran("bsaramdpscale", as.integer(verbose), as.double(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
                       as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel), as.double(fpm), as.double(theta0_m0),
                       as.double(theta0_s0), as.double(tau2_m0), as.double(tau2_v0), as.double(w0), as.double(beta_m0), as.matrix(beta_v0),
                       as.double(alpha_m0), as.double(alpha_s0), as.double(psi_m0), as.double(psi_s0), as.double(psifixed), as.double(omega_m0),

@@ -15,7 +15,8 @@ bsaqdpm(formula, xmin, xmax, p, nbasis, nint,
 mcmc = list(), prior = list(), egrid, ngrid = 500,
 shape = c('Free', 'Increasing', 'Decreasing', 'IncreasingConvex', 'DecreasingConcave',
 'IncreasingConcave', 'DecreasingConvex', 'IncreasingS', 'DecreasingS',
-'IncreasingRotatedS', 'DecreasingRotatedS', 'InvertedU', 'Ushape'))
+'IncreasingRotatedS', 'DecreasingRotatedS', 'InvertedU', 'Ushape'),
+verbose = FALSE)
 }
 
 \arguments{
@@ -73,6 +74,8 @@ shape = c('Free', 'Increasing', 'Decreasing', 'IncreasingConvex', 'DecreasingCon
   				The default value is 500.}
 
   \item{shape}{			a vector giving types of shape restriction. }
+
+  \item{verbose}{   a logical variable. If \code{TRUE}, the iteration number and the Metropolis acceptance rate are printed to the screen.}
 
 }
 

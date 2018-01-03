@@ -1,4 +1,4 @@
-subroutine bsaqamdpscale(yobs,wdata,xobs,egrid,nobs,ngrid,nparw,nfun,nbasis,nint,fmodel,&
+subroutine bsaqamdpscale(verbose,yobs,wdata,xobs,egrid,nobs,ngrid,nparw,nfun,nbasis,nint,fmodel,&
                          fpm,p,theta0_m0,theta0_s0,tau2_m0,tau2_v0,w0,beta_m0,beta_v0,&
                          alpha_m0,alpha_s0,psi_m0,psi_s0,psifixed,omega_m0,omega_s0,&
                          sigma2_r0,sigma2_s0,tmass_a,tmass_b,iflagprior,iflagpsi,&
@@ -12,7 +12,7 @@ implicit none
 
 !input arguments
 integer,intent(in) :: nobs,nparw,nfun,nbasis,nint,fmodel(nfun),iflagprior,iflagpsi
-integer,intent(in) :: maxmodmet,nblow0,nblow,smcmc,nskip,ndisp,ngrid
+integer,intent(in) :: maxmodmet,nblow0,nblow,smcmc,nskip,ndisp,ngrid,verbose
 real(8), intent(in) :: yobs(nobs),wdata(nobs,nparw),xobs(nobs,nfun),fpm(nfun),p
 real(8), intent(in) :: theta0_m0,theta0_s0,tmass_a,tmass_b,egrid(ngrid)
 real(8), intent(in) :: tau2_m0,tau2_v0,w0,beta_m0(nparw),beta_v0(nparw,nparw)
@@ -324,7 +324,9 @@ end do
 
 imcmc=0
 if(maxval(fmodel).gt.1) then
-  call dblepr('Initializing MCMC parameters ...',-1,1.d0,0)
+  if (verbose.eq.1) then
+    call dblepr('Initializing MCMC parameters ...',-1,1.d0,0)
+  end if
   do imodmet=1,maxmodmet
     imodmetg=imodmet
 
@@ -350,7 +352,9 @@ if(maxval(fmodel).gt.1) then
     do ifun=1,nfun
       if (fmodel(ifun).gt.1) then
         if (dble(pmet(ifun))/dble(nblow0).gt.0.6d0) then
-          call haprint(ifun, dble(pmet(ifun))/dble(nblow0))
+          if (verbose.eq.1) then
+            call haprint(ifun, dble(pmet(ifun))/dble(nblow0))
+          end if
 
           metm(ifun)=metm(ifun)*10.d0
           met_var_all(ifun)=metm(ifun)
@@ -384,7 +388,9 @@ if(maxval(fmodel).gt.1) then
           zeta(ifun)=dlog(tau2(ifun))-kbar*gampar(ifun)
           alpha(ifun)=0.d0
         else if (dble(pmet(ifun))/dble(nblow0).lt.0.3d0) then
-          call laprint(ifun, dble(pmet(ifun))/dble(nblow0))
+          if (verbose.eq.1) then
+            call laprint(ifun, dble(pmet(ifun))/dble(nblow0))
+          end if
 
           metm(ifun)=metm(ifun)/10.d0
           met_var_all(ifun)=metm(ifun)
@@ -490,19 +496,23 @@ isave=1
 nmcmc=nblow+nskip*smcmc
 do imcmc=1,nmcmc
   if(imcmc.eq.1) then
-    call dblepr('Burnin ...',-1,1.d0,0)
+    if (verbose.eq.1) then
+      call dblepr('Burnin ...',-1,1.d0,0)
+    end if
     pmet=0
   end if
   call rchkusr()  ! user interrupt
   call GetMCMC()  ! Draw samples
 
   if(imcmc.eq.nblow) then
-    do ifun=1,nfun
-      if(fmodel(ifun).gt.1) then
-        call aprint(ifun, dble(pmet(ifun))/dble(nblow))
-      end if
-    end do
-    call dblepr('Main iterations ...',-1,1.d0,0)
+    if (verbose.eq.1) then
+      do ifun=1,nfun
+        if(fmodel(ifun).gt.1) then
+          call aprint(ifun, dble(pmet(ifun))/dble(nblow))
+        end if
+      end do
+      call dblepr('Main iterations ...',-1,1.d0,0)
+    end if
     pmet=0
   end if
 
@@ -532,20 +542,24 @@ do imcmc=1,nmcmc
     invlikeg(isave,:)=invlike
     edensg(isave,:)=edens
 
-    if (mod(isave,ndisp).eq.0) then
-      call cpu_time(itime)
-      call sprint(isave,smcmc,itime-stime)
+    if (verbose.eq.1) then
+      if (mod(isave,ndisp).eq.0) then
+        call cpu_time(itime)
+        call sprint(isave,smcmc,itime-stime)
+      end if
     end if
     isave=isave+1
   end if
 end do
 deallocate(phixobsfree,phixobsfreet,phixobs,phixgridfree,phixgrid)
 pmetg=dble(pmet)/dble(smcmc*nskip)
-do ifun=1,nfun
-  if(fmodel(ifun).gt.1) then
-    call aprint(ifun, pmetg(ifun))
-  end if
-end do
+if (verbose.eq.1) then
+  do ifun=1,nfun
+    if(fmodel(ifun).gt.1) then
+      call aprint(ifun, pmetg(ifun))
+    end if
+  end do
+end if
 call rndend()
 
 !=========================================================================================

@@ -1,5 +1,5 @@
-"bsad" <- function(x, xmin, xmax, nint, MaxNCos, mcmc = list(), prior = list(), smoother = c("geometric", "algebraic"), 
-                   parametric = c("none", "normal", "gamma", "laplace"), marginal.likelihood = TRUE) {
+"bsad" <- function(x, xmin, xmax, nint, MaxNCos, mcmc = list(), prior = list(), smoother = c("geometric", "algebraic"),
+                   parametric = c("none", "normal", "gamma", "laplace"), marginal.likelihood = TRUE, verbose = FALSE) {
   cl <- match.call()
   xdata <- x
   nobs <- length(xdata)
@@ -178,8 +178,8 @@
   kappaloop <- mcvals$kappaloop
 
   mcmctime <- system.time({
-    foo <- .Fortran("bsad", as.integer(nblow), as.integer(smcmc), as.integer(nskip),
-                    as.integer(ndisp), as.integer(kappaloop),
+    foo <- .Fortran("bsad", as.integer(verbose), as.integer(nblow), as.integer(smcmc),
+                    as.integer(nskip), as.integer(ndisp), as.integer(kappaloop),
                     as.integer(nobs), as.integer(nint), as.integer(npar), as.integer(MaxNCos),
                     as.matrix(probk), as.matrix(cdfk), as.integer(ncol(probk)),
                     as.double(gmax), as.integer(smooth), as.double(PriorProbs),

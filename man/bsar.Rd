@@ -14,7 +14,7 @@ bsar(formula, xmin, xmax, nbasis, nint, mcmc = list(), prior = list(),
 shape = c('Free', 'Increasing', 'Decreasing', 'IncreasingConvex', 'DecreasingConcave',
 'IncreasingConcave', 'DecreasingConvex', 'IncreasingS', 'DecreasingS',
 'IncreasingRotatedS','DecreasingRotatedS','InvertedU','Ushape'),
-marginal.likelihood = TRUE, spm.adequacy = FALSE)
+marginal.likelihood = TRUE, spm.adequacy = FALSE, verbose = FALSE)
 }
 
 \arguments{
@@ -70,6 +70,8 @@ marginal.likelihood = TRUE, spm.adequacy = FALSE)
 
   \item{spm.adequacy}{		a logical variable indicating whether the log marginal likelihood of linear model is calculated.
 				The marginal likelihood gives the values of the linear regression model excluding the nonlinear parts.}
+
+	\item{verbose}{   a logical variable. If \code{TRUE}, the iteration number and the Metropolis acceptance rate are printed to the screen.}
 
 }
 

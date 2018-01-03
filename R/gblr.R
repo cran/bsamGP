@@ -1,5 +1,5 @@
 "gblr" <- function(formula, data = NULL, family, link, mcmc = list(), prior = list(),
-                   marginal.likelihood = TRUE, algorithm = c("AM", "KS")) {
+                   marginal.likelihood = TRUE, algorithm = c("AM", "KS"), verbose = FALSE) {
   cl <- match.call()
 
   ywdata <- parse.formula(formula, data = data)
@@ -65,7 +65,7 @@
   options(warn=-1)
   if (family == "bernoulli" && link == "probit") {
     betam <- glm(yobs ~ wdata - 1, family = binomial(link = probit))$coef
-    fout <- .Fortran("gbprobitAC", as.integer(yobs), as.matrix(wdata),
+    fout <- .Fortran("gbprobitAC", as.integer(verbose), as.integer(yobs), as.matrix(wdata),
                      as.double(betam), as.double(beta_m0), as.matrix(beta_v0),
                      as.integer(nobs), as.integer(nparw), as.integer(nblow),
                      as.integer(nskip), as.integer(smcmc), as.integer(ndisp),
@@ -75,14 +75,14 @@
   if (family == "bernoulli" && link == "logit") {
     betam <- glm(yobs ~ wdata - 1, family = binomial(link = logit))$coef
     if (algorithm == 'KS') {
-      fout <- .Fortran("gblogitKS", as.integer(yobs), as.matrix(wdata),
+      fout <- .Fortran("gblogitKS", as.integer(verbose), as.integer(yobs), as.matrix(wdata),
                        as.double(betam), as.double(beta_m0), as.matrix(beta_v0),
                        as.integer(nobs), as.integer(nparw),
                        as.integer(nblow), as.integer(nskip), as.integer(smcmc), as.integer(ndisp),
                        betaps = matrix(0, smcmc, nparw), loglikeps = numeric(smcmc),
                        logpriorps = numeric(smcmc), NAOK = TRUE, PACKAGE = "bsamGP")
     } else {
-      fout <- .Fortran("gblogitMH", as.integer(yobs), as.matrix(wdata),
+      fout <- .Fortran("gblogitMH", as.integer(verbose), as.integer(yobs), as.matrix(wdata),
                        as.double(betam), as.double(beta_m0), as.matrix(beta_v0),
                        as.integer(nobs), as.integer(nparw),
                        as.integer(nblow), as.integer(nskip), as.integer(smcmc), as.integer(ndisp),
@@ -96,7 +96,7 @@
     mub <- glmfit$coef
     Sb <- vcov(glmfit)
 
-    fout <- .Fortran("gbpoisMH", as.integer(yobs), as.matrix(wdata),
+    fout <- .Fortran("gbpoisMH", as.integer(verbose), as.integer(yobs), as.matrix(wdata),
                      as.double(betam), as.double(beta_m0), as.matrix(beta_v0),
                      as.double(mub), as.matrix(Sb), as.integer(nobs),
                      as.integer(nparw), as.integer(nblow), as.integer(nskip), as.integer(smcmc),
@@ -105,7 +105,7 @@
   }
   if (family == "negative.binomial") {
     betam <- glm.nb(yobs ~ wdata - 1)$coef
-    fout <- .Fortran("gbnegbinMH", as.integer(yobs), as.matrix(wdata),
+    fout <- .Fortran("gbnegbinMH", as.integer(verbose), as.integer(yobs), as.matrix(wdata),
                      as.double(betam), as.double(beta_m0), as.matrix(beta_v0),
                      as.double(kappa_m0), as.double(kappa_v0),
                      as.integer(nobs), as.integer(nparw), as.double(nblow), as.integer(nskip),
@@ -115,7 +115,7 @@
   }
   if (family == "poisson.gamma") {
     betam <- glm.nb(yobs ~ wdata - 1)$coef
-    fout <- .Fortran("gbpoisgammMH", as.integer(yobs), as.matrix(wdata),
+    fout <- .Fortran("gbpoisgammMH", as.integer(verbose), as.integer(yobs), as.matrix(wdata),
                      as.double(betam), as.double(beta_m0), as.matrix(beta_v0),
                      as.double(kappa_m0), as.double(kappa_v0), as.integer(nobs),
                      as.integer(nparw), as.double(nblow), as.integer(nskip),

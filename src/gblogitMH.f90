@@ -1,11 +1,11 @@
-subroutine gblogitMH(yint,xdata,init_beta,b,B0,nobs,nparx,&
+subroutine gblogitMH(verbose,yint,xdata,init_beta,b,B0,nobs,nparx,&
                      nburn,nthin,nsave,ndisp,betas,loglikeps,logpriorps)
 use ToolsRfunf
 implicit none
 
 ! input arguments
 integer,intent(in) :: nobs,nparx,nburn,nthin,nsave,ndisp
-integer,intent(in) :: yint(nobs)
+integer,intent(in) :: yint(nobs),verbose
 real(8), intent(in) :: xdata(nobs,nparx),init_beta(nparx)
 real(8), intent(in) :: b(nparx),B0(nparx,nparx)
 
@@ -40,8 +40,12 @@ call cpu_time(stime)
 call rndstart()
 nmcmc=nburn+nthin*nsave
 isave=1
+if (verbose.eq.1) then
+  call dblepr('Burnin ...',-1,1.d0,0)
+end if
 do imcmc=1,nmcmc
   call rchkusr() ! check interrupt
+  if(imcmc.eq.nburn+1 .and. verbose.eq.1) call dblepr('Main iterations ...',-1,1.d0,0)
 
   call update_beta()  ! update beta
 
@@ -53,9 +57,11 @@ do imcmc=1,nmcmc
     logpriorps(isave)=mvnpdf(beta,b,B0,nparx,.true.)
     loglikeps(isave)=loglik_logit(yobs,Xb,nobs)
 
-    if (mod(isave,ndisp).eq.0) then
-      call cpu_time(itime)
-      call sprint(isave,nsave,itime-stime)
+    if (verbose.eq.1) then
+      if (mod(isave,ndisp).eq.0) then
+        call cpu_time(itime)
+        call sprint(isave,nsave,itime-stime)
+      end if
     end if
 
     isave=isave+1
