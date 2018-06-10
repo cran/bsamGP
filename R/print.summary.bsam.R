@@ -90,6 +90,10 @@
       cat("Inverted U: increasing to omega then decreasing", "\n")
     } else if (x$fmodel[i] == 7 & x$fpm[i] == -1) {
       cat("U Shaped: decreasing to omega then increasing", "\n")
+    } else if (x$fmodel[i] == 8 & x$fpm[i] == 1) {
+      cat("Multiple Extrema : start from increasing and alternates monotone shape", "\n")
+    } else if (x$fmodel[i] == 8 & x$fpm[i] == -1) {
+      cat("Multiple Extrema : start from decreasing and alternates monotone shape", "\n")
     }
     cat("\n")
     
@@ -103,18 +107,43 @@
     if ((x$fmodel[i] == 5) || (x$fmodel[i] == 6) || (x$fmodel[i] == 7)) {
       if (x$iflagpsi == 1) {
         cat("psi is slople of squish function", "\n")
-        cat("Posterior mean   of psi =", x$psim[i], "\n")
-        cat("Posterior stddev of psi =", x$psis[i], "\n")
+        if(x$model == "gbsar") {
+          cat("Posterior mean   of psi =", x$psim[i], "\n")
+          cat("Posterior stddev of psi =", x$psis[i], "\n")
+        } else {
+          cat("Posterior mean   of psi =", x$psim[1,i], "\n")
+          cat("Posterior stddev of psi =", x$psis[1,i], "\n")
+        }
       } else {
         cat("psi is slople of squish function, is constant", "\n")
         cat("Fixed psi = ", x$psim, "\n")
       }
       cat("\n")
       cat("omega is inflection point of squish function", "\n")
-      cat("Posterior mean  omega = ", x$omegam[i], "\n")
-      cat("Posterior stdev omega = ", x$omegas[i], "\n")
+      if(x$model == "gbsar") {
+        cat("Posterior mean  omega = ", x$omegam[i], "\n")
+        cat("Posterior stdev omega = ", x$omegas[i], "\n")        
+      } else {
+        cat("Posterior mean  omega = ", x$omegam[1,i], "\n")
+        cat("Posterior stdev omega = ", x$omegas[1,i], "\n")
+      }
       cat("\n")
     }
+    if (x$fmodel[i] == 8) {
+      if (x$iflagpsi == 1) {
+        cat("psi is slople of squish function", "\n")
+        cat("Posterior mean   of psi =", x$psim[1:x$nExtremes[i],i], "\n")
+        cat("Posterior stddev of psi =", x$psis[1:x$nExtremes[i],i], "\n")
+      } else {
+        cat("psi is slople of squish function, is constant", "\n")
+        cat("Fixed psi = ", x$psim, "\n")
+      }
+      cat("\n")
+      cat("omega is inflection point of squish function", "\n")
+      cat("Posterior mean  omega = ", x$omegam[1:x$nExtremes[i],i], "\n")
+      cat("Posterior stdev omega = ", x$omegas[1:x$nExtremes[i],i], "\n")
+      cat("\n")
+    }    
     if (x$model == "gbsar") {
       cat("theta_k ~ N(0,tau2*exp(-gamma*k))", "\n")
     } else {

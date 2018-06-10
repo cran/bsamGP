@@ -28,6 +28,11 @@
 		* Add S3methods : predict, summary
 		* Clean plot method.
 
-	* v1.1.1 -- 1.1.2
+	* v1.1.1 -- 1.1.3
 		* Separate predictbsam & predictgbsam : BUGFIX
 		* Add verbose option.
+		* Minor Bug fix
+		
+	* v.1.1.4
+		* Supports Multiple extreme shapes for bsar() and bsaq()
+		* Supports scalable regression function bsarBig()

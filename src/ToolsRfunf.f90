@@ -539,10 +539,8 @@ subroutine vech(mat,nr,nc,vec)
   k=1
   do ir=1,nr
     do ic=1,ir
-      if(ic.le.ir) then
-        vec(k)=mat(ir,ic)
-        k=k+1
-      end if
+      vec(k)=mat(ir,ic)
+      k=k+1
     end do
   end do
 
@@ -568,10 +566,8 @@ subroutine Ivech(mat,nr,nc,vec)
   k=1
   do ir=1,nr
     do ic=1,ir
-      if(ic.le.ir) then
-        vec(k)=mat(ir,ic)
-        k=k+1
-      end if
+      vec(k)=mat(ir,ic)
+      k=k+1
     end do
   end do
 

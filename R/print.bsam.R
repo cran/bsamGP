@@ -164,7 +164,20 @@
         cat("h(x) \t= {1 - exp[psi*(x-omega)]}/{exp[psi*(x-omega)]+1}", "\n")
       }
     }
-
+    if (x$fmodel[i] == 8) {
+      if (x$fpm[i] == 1) {
+        cat("Multiple extrema (IncMultExtreme) shaped", "\n")
+        cat("Start increasing before omega_1 and alternate monotone shape at omega_j afterwards", "\n")
+        cat("f(x) \t= int_0^x Z^2(s)h(s) ds - zeta + alpha_0 ", "\n")
+        cat("zeta \t= min(0,min int_0^x Z^2(s)h(s)ds)", "\n")
+      } else {
+        cat("Multiple extrema (DecMultExtreme) shaped", "\n")
+        cat("Start decreasing before omega_1 and alternate monotone shape at omega_j afterwards", "\n")
+        cat("f(x) \t= -int_0^x Z^2(s)h(s) ds + zeta + alpha_0 ", "\n")
+        cat("zeta \t= min(0,min int_0^x Z^2(s)h(s)ds)", "\n")
+      }
+      cat("h(x) \t= sum_{j=1}^{J} (-1)^(j-1) {1- exp[psi_j*(x-omega_j)]}/{exp[psi_j*(x-omega_j)]+1} ", "\n")
+    }
     if (x$fmodel[i] > 2 & x$fmodel[i] < 7) {
       cat("Model for f includes linear term alpha", "\n")
     }
@@ -220,6 +233,13 @@
     cat("that depens on slope psi and location omega (inflection point for S).", "\n")
     cat("psi \t~ N(m0,v0)I(psi > 0)  Truncated Normal", "\n")
     cat("omega \t~ N(m0,v0)I(xmin < omega < xmax) and m0 = (xmin+xmax)/2", "\n")
+    cat("\t", "\n")
+  }
+  if (x$fmodel[i] == 8) {
+    cat("Multiple Extremes models uses squish functions (reparameterization of hyperbolic tangent)", "\n")
+    cat("that depens on slope psi and location omega (inflection point for S).", "\n")
+    cat("psi_j \t~ N(m0j,v0)I(psi_j > 0)  Truncated Normal", "\n")
+    cat("omega_j \t~ N(m0j,v0)I(omega_{j-1} < omega_j < omega_{j+1}) and m0j = xmin + (xmax-xmin)*j/(J+2)", "\n")
     cat("\t", "\n")
   }
 }

@@ -637,6 +637,9 @@ met_beta_new=0.d0
 resid=yobs-wb-sum(fxobs,2)-mu
 ifree=1
 irest=1
+if (iflag_AM.eq.1) then
+  icount_AM=icount_AM+1
+end if
 do ifun=1,nfun
   testp=0.d0
   rk=resid+fxobs(:,ifun)
@@ -782,7 +785,6 @@ do ifun=1,nfun
     end if
 
     if (iflag_AM.eq.1) then
-      icount_AM=icount_AM+1
       met_mAM(ifun)=met_mAM(ifun)+(met_var_all(ifun)-met_mAM(ifun))/dble(icount_AM)
       met_vAM(ifun)=(dble(icount_AM-1)/dble(icount_AM))*met_vAM(ifun) + &
                     ((met_var_all(ifun)-met_mAM(ifun))**2.d0)/dble(icount_AM)

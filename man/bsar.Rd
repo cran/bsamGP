@@ -13,7 +13,8 @@
 bsar(formula, xmin, xmax, nbasis, nint, mcmc = list(), prior = list(),
 shape = c('Free', 'Increasing', 'Decreasing', 'IncreasingConvex', 'DecreasingConcave',
 'IncreasingConcave', 'DecreasingConvex', 'IncreasingS', 'DecreasingS',
-'IncreasingRotatedS','DecreasingRotatedS','InvertedU','Ushape'),
+'IncreasingRotatedS','DecreasingRotatedS','InvertedU','Ushape',
+'IncMultExtreme','DecMultExtreme'), nExtreme = NULL,
 marginal.likelihood = TRUE, spm.adequacy = FALSE, verbose = FALSE)
 }
 
@@ -64,6 +65,8 @@ marginal.likelihood = TRUE, spm.adequacy = FALSE, verbose = FALSE)
 				truncated normal prior distribution for the inflection point of \code{S} or \code{U} shaped function.}
 
   \item{shape}{			a vector giving types of shape restriction. }
+
+  \item{nExtreme}{  a vector of extreme points for 'IncMultExtreme', 'DecMultExtreme' shape restrictions.}
 
   \item{marginal.likelihood}{	a logical variable indicating whether the log marginal likelihood is calculated.
 				The methods of Gelfand and Dey (1994) and Newton and Raftery (1994) are used. }

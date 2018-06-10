@@ -5,6 +5,7 @@
   out$fpm <- object$fpm
   out$nbasis <- object$nbasis
   out$nfun <- object$nfun
+  out$nExtremes <- object$nExtremes
   out$xmin <- object$xmin
   out$xmax <- object$xmax
   out$nobs <- object$n

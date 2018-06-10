@@ -109,7 +109,7 @@ double F77_SUB(rtgamrnd)(double *shape, double *scale, double *up)
 
 double F77_SUB(ltgamrnd)(double *shape, double *scale, double *low)
 {
-    double glow,p,x;
+    double glow, p=0.0, x=0.0;
     glow=pgamma(*low,*shape,*scale,1,0);
     if(glow>=0.9999) {
         x=(*low)-log(1.0-unif_rand())*(*scale);
@@ -207,7 +207,7 @@ double F77_SUB(rtlogisrnd)(double *location, double *scale, double *up)
  double F77_SUB(dald)(double *x, double *location, double *scale, double *p, int *give_log)
  {
      double y=*x,m=*location,s=*scale,tau=*p;
-     double consts,exponent,dens;
+     double consts,exponent=0.0,dens;
      consts=(tau*(1.0-tau)/s);
      if(y<m){
          exponent=exp((1.0-tau)*(y-m)/s);

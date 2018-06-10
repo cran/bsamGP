@@ -1,13 +1,13 @@
-subroutine predictbsam(xobs,xmin,xmax,nobs,nfun,nbasis,nint,fmodel,fpm,smcmc,&
+subroutine predictbsam(xobs,xmin,xmax,nobs,nfun,nbasis,nint,nExtremes,maxNext,fmodel,fpm,smcmc,&
                        thetag,alphag,psig,omegag,fxobsg)
 use bsamTools
 implicit none
 
 !input arguments
-integer,intent(in) :: nobs,nfun,nbasis,nint,fmodel(nfun),smcmc
+integer,intent(in) :: nobs,nfun,nbasis,nint,nExtremes(nfun),maxNext,fmodel(nfun),smcmc
 real(8),intent(in) :: xobs(nobs,nfun),fpm(nfun),xmin(nfun),xmax(nfun)
 real(8),intent(in) :: thetag(nbasis+1,nfun,smcmc),alphag(smcmc,nfun)
-real(8),intent(in) :: psig(smcmc,nfun),omegag(smcmc,nfun)
+real(8),intent(in) :: psig(smcmc,maxNext,nfun),omegag(smcmc,maxNext,nfun)
 
 !output arguments
 real(8),intent(out) :: fxobsg(nobs,nfun,smcmc)
@@ -28,7 +28,7 @@ real(8),allocatable :: phixobsfree(:,:,:),phixgridfree(:,:,:)
 real(8),allocatable :: phixobs(:,:,:),phixgrid(:,:,:)
 
 real(8) :: theta(nbasis+1,nfun)
-real(8) :: psi(nfun),omega(nfun),alpha(nfun)
+real(8) :: psi(maxNext,nfun),omega(maxNext,nfun),alpha(nfun)
 real(8) :: fxobs(nobs,nfun),fxgrid(nint+1,nfun)
 
 ! factors for integration
@@ -72,7 +72,7 @@ end do
 xinxgrid=0
 xidelta=0.d0
 do ifun=1,nfun
-  if(fmodel(ifun).eq.5 .or. fmodel(ifun).eq.6 .or. fmodel(ifun).eq.7) then
+  if(fmodel(ifun).ge.5) then
     call intxgrid(xobs(:,ifun),xmin(ifun),xmax(ifun),xgrid(:,ifun),nobs,nint, &
                   xinxgrid(:,ifun),xidelta(:,ifun))
   end if
@@ -125,6 +125,13 @@ do ifun=1,nfun
                   ConstFun2,ConstCosFun,nbasis,nobs,phixobs(:,:,irest))
       call GetPhi(xgrid(:,ifun),xmin(ifun),xrange(ifun),CosFun2,CrossProdFun, &
                   ConstFun2,ConstCosFun,nbasis,nint+1,phixgrid(:,:,irest))
+    else if (fmodel(ifun).eq.8) then
+      call GetPhi(xobs(:,ifun),xmin(ifun),xrange(ifun),CosFun2,CrossProdFun, &
+                  ConstFun2,ConstCosFun,nbasis,nobs,phixobs(:,:,irest))
+      call GetPhi(xgrid(:,ifun),xmin(ifun),xrange(ifun),CosFun2,CrossProdFun, &
+                  ConstFun2,ConstCosFun,nbasis,nint+1,phixgrid(:,:,irest))
+    else
+      ! cannot exists
     end if
     irest=irest+1
   end if
@@ -138,8 +145,8 @@ do imcmc=1,smcmc
 
   theta=thetag(:,:,imcmc)
   alpha=alphag(imcmc,:)
-  psi=psig(imcmc,:)
-  omega=omegag(imcmc,:)
+  psi=psig(imcmc,:,:)
+  omega=omegag(imcmc,:,:)
 
   ifree=1
   irest=1
@@ -162,23 +169,30 @@ do imcmc=1,smcmc
                          xmid(ifun),phixobs(:,:,irest),phixgrid(:,:,irest),quadfacts, &
                          nbasis,nr,nobs,nint+1,fxobs(:,ifun),fxgrid(:,ifun))
       else if (fmodel(ifun).eq.5) then
-        call GetSf(fpm(ifun),omega(ifun),psi(ifun),alpha(ifun),theta(:,ifun),xobs(:,ifun),&
+        call GetSf(fpm(ifun),omega(1,ifun),psi(1,ifun),alpha(ifun),theta(:,ifun),xobs(:,ifun),&
                    xgrid(:,ifun),phixobs(:,:,irest),phixgrid(:,:,irest),xdelta(ifun),&
                    xinxgrid(:,ifun),xidelta(:,ifun),xrange(ifun),xmid(ifun),quadfacts,&
                    intsimpfacts,nbasis,nr,nobs,nint+1,fxobs(:,ifun),fxgrid(:,ifun))
       else if (fmodel(ifun).eq.6) then
-        call GetRotateSf(fpm(ifun),omega(ifun),psi(ifun),alpha(ifun),theta(:,ifun), &
+        call GetRotateSf(fpm(ifun),omega(1,ifun),psi(1,ifun),alpha(ifun),theta(:,ifun), &
                          xobs(:,ifun),xgrid(:,ifun),phixobs(:,:,irest),phixgrid(:,:,irest),&
                          xdelta(ifun),xinxgrid(:,ifun),xidelta(:,ifun),xrange(ifun), &
                          xmid(ifun),quadfacts,intsimpfacts,nbasis,nr,nobs,nint+1,&
                          fxobs(:,ifun),fxgrid(:,ifun))
-      else
-        call GetUf(fpm(ifun),omega(ifun),psi(ifun),theta(:,ifun),xobs(:,ifun), &
+      else if (fmodel(ifun).eq.7) then
+        call GetUf(fpm(ifun),omega(1,ifun),psi(1,ifun),theta(:,ifun),xobs(:,ifun), &
                    xgrid(:,ifun),phixobs(:,:,irest),phixgrid(:,:,irest),xdelta(ifun), &
                    xinxgrid(:,ifun),xidelta(:,ifun),xrange(ifun),quadfacts, &
                    intsimpfacts,nbasis,nr,nobs,nint+1,fxobs(:,ifun),fxgrid(:,ifun))
+      else if (fmodel(ifun).eq.8) then
+        ! fmodel = 8
+        call GetExtf(fpm(ifun),omega(1:nExtremes(ifun),ifun),psi(1:nExtremes(ifun),ifun),theta(:,ifun),xobs(:,ifun), &
+                         xgrid(:,ifun),phixobs(:,:,irest),phixgrid(:,:,irest),xdelta(ifun), &
+                         xinxgrid(:,ifun),xidelta(:,ifun),xrange(ifun),quadfacts, &
+                         intsimpfacts,nbasis,nr,nobs,nint+1,nExtremes(ifun),fxobs(:,ifun),fxgrid(:,ifun))        
+      else
+        ! not exists
       end if
-
       irest=irest+1
     end if
   end do

@@ -2,7 +2,7 @@
                    shape = c("Free", "Increasing", "Decreasing", "IncreasingConvex",
                              "DecreasingConcave", "IncreasingConcave", "DecreasingConvex",
                              "IncreasingS", "DecreasingS", "IncreasingRotatedS",
-                             "DecreasingRotatedS", "InvertedU", "Ushape"),
+                             "DecreasingRotatedS", "InvertedU", "Ushape","IncMultExtreme","DecMultExtreme"), nExtreme = NULL,
                    marginal.likelihood = TRUE, spm.adequacy = FALSE, verbose = FALSE) {
   cl <- match.call()
 
@@ -52,9 +52,30 @@
     xgrid[, i] <- seq(xmin[i], by = xdelta[i], length = nint + 1)
   }
 
+  if(length(nExtreme) != length(which(fmodel==8)))
+    stop("The length of extreme points are less than specified multiple extreme shape constraints.")
+  nExtremes <- numeric(nfun)
+  nExtremes[fmodel==7] <- 1
+  nExtremes[fmodel==8] <- nExtreme
+
+  if (any((fmodel==8) & (nExtremes==1))) {
+      warning("MultiExtrema with 1 extreme point is equal to either U shape or inverted U shape.")
+      fmodel[(fmodel==8) & (nExtremes==1)] <- 7
+  }
+
+  maxNext <- ifelse(max(nExtremes)>1, max(nExtremes), 1)
+  if(maxNext > 1) {
+    mPos = which(nExtremes!=0)
+    omega_m0 <- matrix(NA, nrow=maxNext, ncol=nfun)
+    for(pos in mPos)
+      omega_m0[1:nExtremes[pos], pos] <- seq(xmin[pos], xmax[pos], length.out=nExtremes[pos]+2)[-c(1,nExtremes[pos]+2)]
+  } else {
+    omega_m0 <- matrix((xmin + xmax)/2, nrow=1, ncol=nfun)
+  }
+
   privals <- list(iflagprior = 0, theta0_m0 = 0, theta0_s0 = 100, tau2_m0 = 1, tau2_v0 = 100, w0 = 2, beta_m0 = numeric(nparw),
                   beta_v0 = diag(100, nparw), sigma2_m0 = 1, sigma2_v0 = 100, alpha_m0 = 3, alpha_s0 = 50, iflagpsi = 1, psifixed = 100,
-                  omega_m0 = (xmin + xmax)/2, omega_s0 = xrange/8)
+                  omega_m0 = omega_m0, omega_s0 = xrange/8)
   privals[names(prior)] <- prior
 
   iflagprior <- privals$iflagprior
@@ -90,14 +111,14 @@
 
   mcmctime <- system.time({
     foo <- .Fortran("bsaram", as.integer(verbose), as.double(yobs), as.matrix(wdata), as.matrix(xobs), as.integer(nobs), as.integer(nparw),
-                    as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel), as.double(fpm), as.double(theta0_m0),
+                    as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(nExtremes), as.integer(maxNext), as.integer(fmodel), as.double(fpm), as.double(theta0_m0),
                     as.double(theta0_s0), as.double(tau2_m0), as.double(tau2_v0), as.double(w0), as.double(beta_m0), as.matrix(beta_v0),
-                    as.double(alpha_m0), as.double(alpha_s0), as.double(psi_m0), as.double(psi_s0), as.double(psifixed), as.double(omega_m0),
+                    as.double(alpha_m0), as.double(alpha_s0), as.double(psi_m0), as.double(psi_s0), as.double(psifixed), as.matrix(omega_m0),
                     as.double(omega_s0), as.double(sigma2_m0), as.double(sigma2_v0), as.integer(iflagprior), as.integer(iflagpsi),
                     as.integer(maxmodmet), as.integer(nblow0), as.integer(nblow), as.integer(smcmc), as.integer(nskip), as.integer(ndisp),
                     zetag = matrix(0, smcmc, nfun), tau2g = matrix(0, smcmc, nfun), gammag = matrix(0, smcmc, nfun),
                     thetag = array(0, dim = c(nbasis + 1, nfun, smcmc)), betag = matrix(0, smcmc, nparw), alphag = matrix(0, smcmc, nfun), sigma2g = numeric(smcmc),
-                    psig = matrix(0, smcmc, nfun), omegag = matrix(0, smcmc, nfun), fxgridg = array(0, dim = c(nint + 1, nfun, smcmc)),
+                    psig = array(0, c(smcmc, maxNext, nfun)), omegag = array(0, c(smcmc, maxNext, nfun)), fxgridg = array(0, dim = c(nint + 1, nfun, smcmc)),
                     fxobsg = array(0, dim = c(nobs, nfun, smcmc)), yestg = matrix(0, smcmc, nobs), wbg = matrix(0, smcmc, nobs), loglikeg = numeric(smcmc),
                     logpriorg = numeric(smcmc), imodmetg = as.integer(numeric(1)), pmetg = numeric(nfun), NAOK = TRUE, PACKAGE = "bsamGP")
   })
@@ -171,13 +192,13 @@
   post.est$alpham <- alpham
   post.est$alphas <- alphas
 
-  psim <- colMeans(foo$psig)
-  psis <- apply(foo$psig, 2, sd)
+  psim <- apply(foo$psig, c(2,3), mean)
+  psis <- apply(foo$psig, c(2,3), sd)
   post.est$psim <- psim
   post.est$psis <- psis
 
-  omegam <- colMeans(foo$omegag)
-  omegas <- apply(foo$omegag, 2, sd)
+  omegam <- apply(foo$omegag, c(2,3), mean)
+  omegas <- apply(foo$omegag, c(2,3), sd)
   post.est$omegam <- omegam
   post.est$omegas <- omegas
 
@@ -245,36 +266,54 @@
     psi_lnpn <- numeric(nfun)
     omega_lnpn <- numeric(nfun)
     for (i in 1:nfun) {
-      if (fmodel[i] > 4.5) {
-        if (iflagpsi == 1) {
-          if (psi_sn[i] <= 0) {
-            psi_sn[i] <- 0.001
-            psi_vn[i] <- psi_sn[i]^2
+      if ((4 < fmodel[i]) && (fmodel[i] < 8)) {
+        if (iflagpsi) {
+          if (psi_sn[1,i] <= 0) {
+            psi_sn[1,i] <- 0.001
+            psi_vn[1,i] <- psi_sn[1,i]^2
           }
-          psi_lnpn[i] <- log(1 - pnorm(-psi_mn[i]/psi_sn[i]))
+          psi_lnpn[i] <- log(1 - pnorm(-psi_mn[1,i]/psi_sn[1,i]))
         }
-        if (omega_sn[i] <= 0) {
-          omega_sn[i] <- 0.01
-          omega_vn[i] <- omega_sn[i]^2
+        if (omega_sn[1,i] <= 0) {
+          omega_sn[1,i] <- 0.01
+          omega_vn[1,i] <- omega_sn[1,i]^2
         }
-        omega_lnpn[i] <- log(pnorm((xmax[i] - omegam[i])/(omega_sn[i])) - pnorm((xmin[i] - omegam[i])/(omega_sn[i])))
+        omega_lnpn[i] <- log(pnorm((xmax[i] - omegam[1,i])/(omega_sn[1,i])) - pnorm((xmin[i] - omegam[1,i])/(omega_sn[1,i])))
+      }
+      if (fmodel[i] == 8) {
+        if(iflagpsi) {
+          psi_sn[psi_sn[,i] <= 0, i] <- 0.001
+          psi_vn[,i] <- psi_sn[,i]^2
+          psi_lnpn[i] <- sum(log(1 - pnorm(-psi_mn[,i]/psi_sn[,i])))
+        }
+        omega_sn[omega_sn[,i] <= 0, i] <- 0.01
+        omega_vn[,i] <- omega_sn[,i]^2
+
+        if(nExtremes[i]<3) {
+          omega_lnpn[i] <- sum( log(pnorm( (omegam[2,i]-omegam[1,i])/(omega_sn[1,i])) - pnorm( (xmin[i]-omegam[1,i])/(omega_sn[1,i]))),
+                  log(pnorm( (xmax[i]-omegam[nExtremes[i],i])/(omega_sn[nExtremes[i],i])) - pnorm( (omegam[nExtremes[i]-1,i]-omegam[nExtremes[i],i])/(omega_sn[nExtremes[i],i]))) )
+        } else {
+          omega_lnpn[i] <- sum( log(pnorm( (omegam[2,i]-omegam[1,i])/(omega_sn[1,i])) - pnorm( (xmin[i]-omegam[1,i])/(omega_sn[1,i]))),
+              sapply(2:(nExtremes[i]-1), function(k) log(pnorm( (omegam[k+1,i]-omegam[k,i])/(omega_sn[k,i])) - pnorm( (omegam[k-1,i]-omegam[k,i])/(omega_sn[k,i])))),
+              log(pnorm( (xmax[i]-omegam[nExtremes[i],i])/(omega_sn[nExtremes[i],i])) - pnorm( (omegam[nExtremes[i]-1,i]-omegam[nExtremes[i],i])/(omega_sn[nExtremes[i],i]))) )
+        }
       }
     }
 
     logg <- .Fortran("bsaramgetlogg", as.integer(fmodel), as.matrix(mcmc.draws$beta), as.double(mcmc.draws$sigma2), as.array(mcmc.draws$theta),
-                     as.matrix(mcmc.draws$tau2), as.matrix(mcmc.draws$gamma), as.matrix(mcmc.draws$alpha), as.matrix(mcmc.draws$psi),
-                     as.matrix(mcmc.draws$omega), as.integer(smcmc), as.integer(nparw), as.integer(nfun), as.integer(nbasis), as.integer(iflagpsi),
+                     as.matrix(mcmc.draws$tau2), as.matrix(mcmc.draws$gamma), as.matrix(mcmc.draws$alpha), as.array(mcmc.draws$psi),
+                     as.array(mcmc.draws$omega), as.integer(smcmc), as.integer(nparw), as.integer(nfun), as.integer(nbasis), as.integer(nExtremes), as.integer(maxNext), as.integer(iflagpsi),
                      as.double(beta_mn), as.matrix(beta_covi), as.double(lndetbcov), as.double(sigma2_rn), as.double(sigma2_sn), as.double(theta_mn),
                      as.double(theta_sn), as.double(theta0_lnpn), as.double(tau2_rn), as.double(tau2_sn), as.double(gamma_mn), as.double(gamma_vn),
-                     as.double(gamma_lnpn), as.double(alpha_mn), as.double(alpha_vn), as.double(alpha_lnpn), as.double(psi_mn), as.double(psi_vn),
-                     as.double(psi_lnpn), as.double(omega_mn), as.double(omega_vn), as.double(omega_lnpn), logg = numeric(smcmc),
+                     as.double(gamma_lnpn), as.double(alpha_mn), as.double(alpha_vn), as.double(alpha_lnpn), as.matrix(psi_mn), as.matrix(psi_vn),
+                     as.double(psi_lnpn), as.matrix(omega_mn), as.matrix(omega_vn), as.double(omega_lnpn), logg = numeric(smcmc),
                      NAOK = TRUE, PACKAGE = "bsamGP")$logg
     loglik.draws$logg <- logg
 
     logjointg <- foo$loglikeg + foo$logpriorg
     ratiog <- logg - logjointg
-    maxratio <- max(ratiog)
-    mratio <- mean(ratiog)
+    maxratio <- max(ratiog, na.rm=TRUE)
+    mratio <- mean(ratiog, na.rm=TRUE)
     if (maxratio - mratio > 700) {
       # Can have overflow
       cratio <- maxratio - 600
@@ -340,6 +379,7 @@
   res.out$fmodel <- fmodel
   res.out$fpm <- fpm
   res.out$nfun <- nfun
+  res.out$nExtremes <- nExtremes
 
   res.out$prior <- privals
 

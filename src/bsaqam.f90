@@ -1,4 +1,4 @@
-subroutine bsaqam(verbose,yobs,wdata,xobs,nobs,nparw,nfun,nbasis,nint,fmodel,fpm,p,&
+subroutine bsaqam(verbose,yobs,wdata,xobs,nobs,nparw,nfun,nbasis,nint,nExtremes,maxNext,fmodel,fpm,p,&
                   theta0_m0,theta0_s0,tau2_m0,tau2_v0,w0,beta_m0,beta_v0,&
                   alpha_m0,alpha_s0,psi_m0,psi_s0,psifixed,omega_m0,omega_s0,&
                   sigma2_m0,sigma2_v0,iflagprior,iflagpsi,&
@@ -10,20 +10,20 @@ use bsamTools
 implicit none
 
 !input arguments
-integer,intent(in) :: nobs,nparw,nfun,nbasis,nint,fmodel(nfun),iflagprior,iflagpsi
+integer,intent(in) :: nobs,nparw,nfun,nbasis,nExtremes(nfun),maxNext,nint,fmodel(nfun),iflagprior,iflagpsi
 integer,intent(in) :: maxmodmet,nblow0,nblow,smcmc,nskip,ndisp,verbose
 real(8), intent(in) :: yobs(nobs),wdata(nobs,nparw),xobs(nobs,nfun),fpm(nfun),p
 real(8), intent(in) :: theta0_m0,theta0_s0
 real(8), intent(in) :: tau2_m0,tau2_v0,w0,beta_m0(nparw),beta_v0(nparw,nparw)
-real(8), intent(in) :: alpha_m0,alpha_s0,psi_m0,psi_s0,omega_m0(nfun),omega_s0(nfun)
+real(8), intent(in) :: alpha_m0,alpha_s0,psi_m0,psi_s0,omega_m0(maxNext,nfun),omega_s0(nfun)
 real(8), intent(in) :: psifixed,sigma2_m0,sigma2_v0
 
 !output arguments
 integer,intent(out) :: imodmetg
 real(8),intent(out) :: zetag(smcmc,nfun),tau2g(smcmc,nfun),gammag(smcmc,nfun)
 real(8),intent(out) :: thetag(nbasis+1,nfun,smcmc),betag(smcmc,nparw)
-real(8),intent(out) :: alphag(smcmc,nfun),sigma2g(smcmc),psig(smcmc,nfun)
-real(8),intent(out) :: omegag(smcmc,nfun),fxgridg(nint+1,nfun,smcmc)
+real(8),intent(out) :: alphag(smcmc,nfun),sigma2g(smcmc),psig(smcmc,maxNext,nfun)
+real(8),intent(out) :: omegag(smcmc,maxNext,nfun),fxgridg(nint+1,nfun,smcmc)
 real(8),intent(out) :: fxobsg(nobs,nfun,smcmc),wbg(smcmc,nobs),yestg(smcmc,nobs)
 real(8),intent(out) :: loglikeg(smcmc),logpriorg(smcmc),pmetg(nfun),nug(smcmc,nobs)
 
@@ -68,7 +68,7 @@ real(8) :: eta1,eta1sq,eta2sq,nu(nobs),nu_v(nobs,nobs),nu_vi(nobs,nobs)
 real(8) :: sigma,sigma2,tau(nfun),tau2(nfun),tau2i(nfun),gampar(nfun),lngampar(nfun)
 real(8) :: theta(nbasis+1,nfun),theta02(nfun),theta2(nbasis,nfun),beta(nparw),wb(nobs)
 real(8) :: theta0(nfun),gamvec0(nbasis+1,nfun),thv0(nbasis,nfun),thv00(nbasis+1,nfun)
-real(8) :: psi(nfun),omega(nfun),zeta(nfun),alpha(nfun),gamvec(nbasis,nfun)
+real(8) :: psi(maxNext,nfun),omega(maxNext,nfun),zeta(nfun),alpha(nfun),gamvec(nbasis,nfun)
 real(8) :: fxobs(nobs,nfun),fxgrid(nint+1,nfun),yest(nobs),ehat(nobs),sigma2i
 
 real(8) :: cdfnorm,rndnorm
@@ -148,7 +148,7 @@ end do
 xinxgrid=0
 xidelta=0.d0
 do ifun=1,nfun
-  if(fmodel(ifun).eq.5 .or. fmodel(ifun).eq.6 .or. fmodel(ifun).eq.7) then
+  if(fmodel(ifun).ge.5) then
     call intxgrid(xobs(:,ifun),xmin(ifun),xmax(ifun),xgrid(:,ifun),nobs,nint, &
                   xinxgrid(:,ifun),xidelta(:,ifun))
   end if
@@ -195,8 +195,21 @@ omega_v0=omega_s0**2.d0
 omega_v0i=1.d0/omega_v0
 omega_lnv0=dlog(omega_v0)
 do ifun=1,nfun
-  omega_lnp0(ifun)=dlog(cdfnorm((xmax(ifun)-omega_m0(ifun))/(omega_s0(ifun)),0.d0,1.d0,1,0)- &
-                        cdfnorm((xmin(ifun)-omega_m0(ifun))/(omega_s0(ifun)),0.d0,1.d0,1,0))
+  if(fmodel(ifun).ge.5 .and. fmodel(ifun).le.7) then
+    omega_lnp0(ifun)=dlog(cdfnorm((xmax(ifun)-omega_m0(1,ifun))/(omega_s0(ifun)),0.d0,1.d0,1,0)- &
+                   cdfnorm((xmin(ifun)-omega_m0(1,ifun))/(omega_s0(ifun)),0.d0,1.d0,1,0))
+  endif
+  if (fmodel(ifun).eq.8) then
+    omega_lnp0(ifun)=dlog(cdfnorm((omega_m0(2,ifun)-omega_m0(1,ifun))/(omega_s0(ifun)),0.d0,1.d0,1,0)- &
+                   cdfnorm((xmin(ifun)-omega_m0(1,ifun))/(omega_s0(ifun)),0.d0,1.d0,1,0))+ &
+        dlog(cdfnorm((xmax(ifun)-omega_m0(nExtremes(ifun),ifun))/(omega_s0(ifun)),0.d0,1.d0,1,0)- &
+                   cdfnorm((omega_m0(nExtremes(ifun)-1,ifun)-omega_m0(nExtremes(ifun),ifun))/(omega_s0(ifun)),0.d0,1.d0,1,0))
+      do k=2,(nExtremes(ifun)-1)
+        omega_lnp0(ifun) = omega_lnp0(ifun) + &
+          dlog(cdfnorm((omega_m0(k+1,ifun)-omega_m0(k,ifun))/(omega_s0(ifun)),0.d0,1.d0,1,0)- &
+                   cdfnorm((omega_m0(k-1,ifun)-omega_m0(k,ifun))/(omega_s0(ifun)),0.d0,1.d0,1,0))
+      end do
+  endif
 end do
 
 sigma2_r0=2.d0*(2.d0+sigma2_m0**2.d0/sigma2_v0)
@@ -219,7 +232,7 @@ tau2=tau2_m0
 tau=dsqrt(tau2)
 tau2i=1.d0/tau2
 psi=psifixed
-omega=xmid
+omega=omega_m0
 gampar=1.d0/w0
 lngampar=dlog(gampar)
 do ifun=1,nfun
@@ -305,7 +318,7 @@ do ifun=1,nfun
       call GetPhi(xgrid(:,ifun),xmin(ifun),xrange(ifun),CosFun2,CrossProdFun,&
                   ConstFun2,ConstCosFun,nbasis,nint+1,phixgrid(:,:,irest))
 
-      call GetSf(fpm(ifun),omega(ifun),psi(ifun),alpha(ifun),theta(:,ifun),xobs(:,ifun),&
+      call GetSf(fpm(ifun),omega(1,ifun),psi(1,ifun),alpha(ifun),theta(:,ifun),xobs(:,ifun),&
                  xgrid(:,ifun),phixobs(:,:,irest),phixgrid(:,:,irest),xdelta(ifun),&
                  xinxgrid(:,ifun),xidelta(:,ifun),xrange(ifun),xmid(ifun),quadfacts,&
                  intsimpfacts,nbasis,nr,nobs,nint+1,fxobs(:,ifun),fxgrid(:,ifun))
@@ -317,7 +330,7 @@ do ifun=1,nfun
       call GetPhi(xgrid(:,ifun),xmin(ifun),xrange(ifun),CosFun2,CrossProdFun, &
                   ConstFun2,ConstCosFun,nbasis,nint+1,phixgrid(:,:,irest))
 
-      call GetRotateSf(fpm(ifun),omega(ifun),psi(ifun),alpha(ifun),theta(:,ifun), &
+      call GetRotateSf(fpm(ifun),omega(1,ifun),psi(1,ifun),alpha(ifun),theta(:,ifun), &
                        xobs(:,ifun),xgrid(:,ifun),phixobs(:,:,irest),phixgrid(:,:,irest),&
                        xdelta(ifun),xinxgrid(:,ifun),xidelta(:,ifun),xrange(ifun), &
                        xmid(ifun),quadfacts,intsimpfacts,nbasis,nr,nobs,nint+1,&
@@ -330,12 +343,22 @@ do ifun=1,nfun
       call GetPhi(xgrid(:,ifun),xmin(ifun),xrange(ifun),CosFun2,CrossProdFun, &
                   ConstFun2,ConstCosFun,nbasis,nint+1,phixgrid(:,:,irest))
 
-      call GetUf(fpm(ifun),omega(ifun),psi(ifun),theta(:,ifun),xobs(:,ifun), &
+      call GetUf(fpm(ifun),omega(1,ifun),psi(1,ifun),theta(:,ifun),xobs(:,ifun), &
                  xgrid(:,ifun),phixobs(:,:,irest),phixgrid(:,:,irest),xdelta(ifun), &
                  xinxgrid(:,ifun),xidelta(:,ifun),xrange(ifun),quadfacts, &
                  intsimpfacts,nbasis,nr,nobs,nint+1,fxobs(:,ifun),fxgrid(:,ifun))
     end if
 
+    if (fmodel(ifun).eq.8) then
+      call GetPhi(xobs(:,ifun),xmin(ifun),xrange(ifun),CosFun2,CrossProdFun, &
+                  ConstFun2,ConstCosFun,nbasis,nobs,phixobs(:,:,irest))
+      call GetPhi(xgrid(:,ifun),xmin(ifun),xrange(ifun),CosFun2,CrossProdFun, &
+                  ConstFun2,ConstCosFun,nbasis,nint+1,phixgrid(:,:,irest))
+      call GetExtf(fpm(ifun),omega(1:nExtremes(ifun),ifun),psi(1:nExtremes(ifun),ifun),theta(:,ifun),xobs(:,ifun), &
+                       xgrid(:,ifun),phixobs(:,:,irest),phixgrid(:,:,irest),xdelta(ifun), &
+                       xinxgrid(:,ifun),xidelta(:,ifun),xrange(ifun),quadfacts, &
+                       intsimpfacts,nbasis,nr,nobs,nint+1,nExtremes(ifun),fxobs(:,ifun),fxgrid(:,ifun))
+    end if
     irest=irest+1
   end if
 end do
@@ -398,8 +421,8 @@ if(maxval(fmodel).gt.1) then
           gampar(ifun)=1.d0/w0
           lngampar(ifun)=dlog(gampar(ifun))
           gamvec(:,ifun)=dexp(-kall*gampar(ifun))
-          psi(ifun)=psifixed
-          omega(ifun)=(xmin(ifun)+xmax(ifun))/2.d0
+          psi(:,ifun)=psifixed
+          omega(:,ifun)=omega_m0(:,ifun)!(xmin(ifun)+xmax(ifun))/2.d0
           zeta(ifun)=dlog(tau2(ifun))-kbar*gampar(ifun)
           alpha(ifun)=0.d0
         else if (dble(pmet(ifun))/dble(nblow0).lt.0.3d0) then
@@ -434,8 +457,8 @@ if(maxval(fmodel).gt.1) then
           gampar(ifun)=1.d0/w0
           lngampar(ifun)=dlog(gampar(ifun))
           gamvec(:,ifun)=dexp(-kall*gampar(ifun))
-          psi(ifun)=psifixed
-          omega(ifun)=(xmin(ifun)+xmax(ifun))/2.d0
+          psi(:,ifun)=psifixed
+          omega(:,ifun)=omega_m0(:,ifun)!(xmin(ifun)+xmax(ifun))/2.d0
           zeta(ifun)=dlog(tau2(ifun))-kbar*gampar(ifun)
           alpha(ifun)=0.d0
         else
@@ -483,21 +506,26 @@ if(maxval(fmodel).gt.1) then
                              xmid(ifun),phixobs(:,:,irest),phixgrid(:,:,irest),quadfacts, &
                              nbasis,nr,nobs,nint+1,fxobs(:,ifun),fxgrid(:,ifun))
           else if (fmodel(ifun).eq.5) then
-            call GetSf(fpm(ifun),omega(ifun),psi(ifun),alpha(ifun),theta(:,ifun),xobs(:,ifun),&
+            call GetSf(fpm(ifun),omega(1,ifun),psi(1,ifun),alpha(ifun),theta(:,ifun),xobs(:,ifun),&
                        xgrid(:,ifun),phixobs(:,:,irest),phixgrid(:,:,irest),xdelta(ifun),&
                        xinxgrid(:,ifun),xidelta(:,ifun),xrange(ifun),xmid(ifun),quadfacts,&
                        intsimpfacts,nbasis,nr,nobs,nint+1,fxobs(:,ifun),fxgrid(:,ifun))
           else if (fmodel(ifun).eq.6) then
-            call GetRotateSf(fpm(ifun),omega(ifun),psi(ifun),alpha(ifun),theta(:,ifun), &
+            call GetRotateSf(fpm(ifun),omega(1,ifun),psi(1,ifun),alpha(ifun),theta(:,ifun), &
                              xobs(:,ifun),xgrid(:,ifun),phixobs(:,:,irest),phixgrid(:,:,irest),&
                              xdelta(ifun),xinxgrid(:,ifun),xidelta(:,ifun),xrange(ifun), &
                              xmid(ifun),quadfacts,intsimpfacts,nbasis,nr,nobs,nint+1,&
                              fxobs(:,ifun),fxgrid(:,ifun))
-          else
-            call GetUf(fpm(ifun),omega(ifun),psi(ifun),theta(:,ifun),xobs(:,ifun), &
+          else if (fmodel(ifun).eq.7) then
+            call GetUf(fpm(ifun),omega(1,ifun),psi(1,ifun),theta(:,ifun),xobs(:,ifun), &
                        xgrid(:,ifun),phixobs(:,:,irest),phixgrid(:,:,irest),xdelta(ifun), &
                        xinxgrid(:,ifun),xidelta(:,ifun),xrange(ifun),quadfacts, &
                        intsimpfacts,nbasis,nr,nobs,nint+1,fxobs(:,ifun),fxgrid(:,ifun))
+          else
+            call GetExtf(fpm(ifun),omega(1:nExtremes(ifun),ifun),psi(1:nExtremes(ifun),ifun),theta(:,ifun),xobs(:,ifun), &
+                             xgrid(:,ifun),phixobs(:,:,irest),phixgrid(:,:,irest),xdelta(ifun), &
+                             xinxgrid(:,ifun),xidelta(:,ifun),xrange(ifun),quadfacts, &
+                             intsimpfacts,nbasis,nr,nobs,nint+1,nExtremes(ifun),fxobs(:,ifun),fxgrid(:,ifun))
           end if
 
           irest=irest+1
@@ -539,8 +567,8 @@ do imcmc=1,nmcmc
     gammag(isave,:)=gampar
     thetag(:,:,isave)=theta
     alphag(isave,:)=alpha
-    psig(isave,:)=psi
-    omegag(isave,:)=omega
+    psig(isave,:,:)=psi
+    omegag(isave,:,:)=omega
     nug(isave,:)=nu
 
     wbg(isave,:)=wb
@@ -554,7 +582,6 @@ do imcmc=1,nmcmc
                     dble(nobs)*(dlog(p)+dlog(1.d0-p)-dlog(sigma2))
 
     logpriorg(isave)=GetLogPrior()
-
     if (verbose.eq.1) then
       if (mod(isave,ndisp).eq.0) then
         call cpu_time(itime)
@@ -592,8 +619,8 @@ real(8) :: met_var_all_new(nfun),met_beta_new(nfun),testp
 real(8) :: theta0_old,theta_old(nbasis),met_var0,met_var,met_std0
 real(8) :: theta0_new,theta02_new,theta_new(nbasis),theta2_new(nbasis),thetanew(nbasis+1)
 real(8) :: theta0_new_lnp,theta0_old_lnp,fxobs_new(nobs),fxgrid_new(nint+1)
-real(8) :: met_stdS,met_varS,psi_old,psi_lnpold,psi_new,psi_lnpnew
-real(8) :: omega_old,omega_lnpold,omega_new,omega_lnpnew
+real(8) :: met_stdS,met_varS,psi_old,psi_oldExt(maxNext),psi_lnpold,psi_new,psi_newExt(maxNext),psi_lnpnew
+real(8) :: omega_old,omega_oldExt(maxNext),omega_lnpold,omega_new,omega_newExt(maxNext),omega_lnpnew
 real(8) :: resid_old(nobs),resid_new(nobs),sse_old,sse_new,sold,snew
 real(8) :: fx1(nobs),fxg1(nint+1),a_vni,a_vn,a_mn,xtx(nfun)
 real(8) :: th2gam(nbasis),sn,bup
@@ -668,6 +695,9 @@ met_beta_new=0.d0
 resid=yobs-wb-sum(fxobs,2)-eta1*nu
 ifree=1
 irest=1
+if (iflag_AM.eq.1) then
+  icount_AM=icount_AM+1
+end if
 do ifun=1,nfun
   testp=0.d0
   rk=resid+fxobs(:,ifun)
@@ -723,12 +753,12 @@ do ifun=1,nfun
       call GetConcavef(fpm(ifun),alpha(ifun),thetanew,xobs(:,ifun),xgrid(:,ifun),&
                        xmid(ifun),phixobs(:,:,irest),phixgrid(:,:,irest),quadfacts, &
                        nbasis,nr,nobs,nint+1,fxobs_new,fxgrid_new)
-    else
+    else if (fmodel(ifun).le.7) then
       if (iflagpsi.eq.1) then
         met_varS=met_psi_beta(ifun)/gamrnd(met_psi_alpha,1.d0)
         met_stdS=dsqrt(met_varS)
 
-        psi_old=psi(ifun)
+        psi_old=psi(1,ifun)
         psi_new=ltnormrnd(psi_old,met_stdS,0.d0)
         psi_lnpnew=cdfnorm(-psi_old/met_stdS,0.d0,1.d0,0,1)
         psi_lnpold=cdfnorm(-psi_new/met_stdS,0.d0,1.d0,0,1)
@@ -739,14 +769,14 @@ do ifun=1,nfun
               psi_lnpold+ &
               psi_lnpnew
       else
-        psi_old=psi(ifun)
-        psi_new=psi(ifun)
+        psi_old=psi(1,ifun)
+        psi_new=psi(1,ifun)
       end if
 
       met_varS=met_omega_beta(ifun)/gamrnd(met_omega_alpha,1.d0)
       met_stdS=dsqrt(met_varS)
 
-      omega_old=omega(ifun)
+      omega_old=omega(1,ifun)
       omega_new=tnormrnd(omega_old,met_stdS,xmin(ifun),xmax(ifun))
       omega_lnpnew=dlog(cdfnorm((xmax(ifun)-omega_old)/met_stdS,0.d0,1.d0,1,0)- &
                         cdfnorm((xmin(ifun)-omega_old)/met_stdS,0.d0,1.d0,1,0))
@@ -754,8 +784,8 @@ do ifun=1,nfun
                         cdfnorm((xmin(ifun)-omega_new)/met_stdS,0.d0,1.d0,1,0))
 
       testp=testp- &
-            ((omega_new-omega_m0(ifun))**2.d0)/(2.d0*omega_v0(ifun))+&
-            ((omega_old-omega_m0(ifun))**2.d0)/(2.d0*omega_v0(ifun))-&
+            ((omega_new-omega_m0(1,ifun))**2.d0)/(2.d0*omega_v0(ifun))+&
+            ((omega_old-omega_m0(1,ifun))**2.d0)/(2.d0*omega_v0(ifun))-&
             omega_lnpold+ &
             omega_lnpnew
 
@@ -776,6 +806,63 @@ do ifun=1,nfun
                    xinxgrid(:,ifun),xidelta(:,ifun),xrange(ifun),quadfacts, &
                    intsimpfacts,nbasis,nr,nobs,nint+1,fxobs_new,fxgrid_new)
       end if
+    else
+      ! fmodel .eq.8 : Multiple extrema
+      if (iflagpsi.eq.1) then
+        met_varS=met_psi_beta(ifun)/gamrnd(met_psi_alpha,1.d0)
+        met_stdS=dsqrt(met_varS)
+
+        psi_oldExt=psi(:,ifun)
+        do k=1,nExtremes(ifun)
+          psi_newExt(k)=ltnormrnd(psi_oldExt(k),met_stdS,0.d0)
+          psi_lnpnew=cdfnorm(-psi_oldExt(k)/met_stdS,0.d0,1.d0,0,1)
+          psi_lnpold=cdfnorm(-psi_newExt(k)/met_stdS,0.d0,1.d0,0,1)
+          testp=testp-&
+                ((psi_newExt(k)-psi_m0)**2.d0)/(2.d0*psi_v0)+&
+                ((psi_oldExt(k)-psi_m0)**2.d0)/(2.d0*psi_v0)-&
+                psi_lnpold+ &
+                psi_lnpnew
+        enddo
+      else
+        psi_oldExt=psi(:,ifun)
+        psi_newExt=psi(:,ifun)
+      end if
+
+      met_varS=met_omega_beta(ifun)/gamrnd(met_omega_alpha,1.d0)
+      met_stdS=dsqrt(met_varS)
+
+      omega_oldExt=omega(:,ifun)
+      do k=1,nExtremes(ifun)
+        if (k.eq.1) then
+          omega_newExt(k)=tnormrnd(omega_oldExt(k),met_stdS,xmin(ifun),omega_oldExt(k+1))
+          omega_lnpnew=dlog(cdfnorm((omega_newExt(k+1)-omega_oldExt(k))/met_stdS,0.d0,1.d0,1,0)- &
+          cdfnorm((xmin(ifun)-omega_oldExt(k))/met_stdS,0.d0,1.d0,1,0))
+          omega_lnpold=dlog(cdfnorm((omega_oldExt(k+1)-omega_newExt(k))/met_stdS,0.d0,1.d0,1,0)- &
+                     cdfnorm((xmin(ifun)-omega_newExt(k))/met_stdS,0.d0,1.d0,1,0))
+        else if (k.gt.1 .and. k.lt.nExtremes(ifun)) then
+          omega_newExt(k)=tnormrnd(omega_oldExt(k),met_stdS,omega_oldExt(k-1),omega_oldExt(k+1))
+          omega_lnpnew=dlog(cdfnorm((omega_newExt(k+1)-omega_oldExt(k))/met_stdS,0.d0,1.d0,1,0)- &
+            cdfnorm((omega_newExt(k-1)-omega_oldExt(k))/met_stdS,0.d0,1.d0,1,0))
+          omega_lnpold=dlog(cdfnorm((omega_oldExt(k+1)-omega_newExt(k))/met_stdS,0.d0,1.d0,1,0)- &
+                     cdfnorm((omega_oldExt(k-1)-omega_newExt(k))/met_stdS,0.d0,1.d0,1,0))         
+        else
+          omega_newExt(k)=tnormrnd(omega_oldExt(k),met_stdS,omega_oldExt(k-1),xmax(ifun))
+          omega_lnpnew=dlog(cdfnorm((xmax(ifun)-omega_oldExt(k))/met_stdS,0.d0,1.d0,1,0)- &
+          cdfnorm((omega_newExt(k-1)-omega_oldExt(k))/met_stdS,0.d0,1.d0,1,0))
+          omega_lnpold=dlog(cdfnorm((xmax(ifun)-omega_newExt(k))/met_stdS,0.d0,1.d0,1,0)- &
+                     cdfnorm((omega_oldExt(k-1)-omega_newExt(k))/met_stdS,0.d0,1.d0,1,0))
+        end if
+        testp=testp- &
+              ((omega_newExt(k)-omega_m0(k,ifun))**2.d0)/(2.d0*omega_v0(ifun))+&
+              ((omega_oldExt(k)-omega_m0(k,ifun))**2.d0)/(2.d0*omega_v0(ifun))-&
+              omega_lnpold+ &
+              omega_lnpnew
+      end do
+
+      call GetExtf(fpm(ifun),omega_newExt(1:nExtremes(ifun)),psi_newExt(1:nExtremes(ifun)),thetanew,xobs(:,ifun), &
+                   xgrid(:,ifun),phixobs(:,:,irest),phixgrid(:,:,irest),xdelta(ifun), &
+                   xinxgrid(:,ifun),xidelta(:,ifun),xrange(ifun),quadfacts, &
+                   intsimpfacts,nbasis,nr,nobs,nint+1,nExtremes(ifun),fxobs_new,fxgrid_new)      
     end if
 
     resid_new=rk-fxobs_new
@@ -804,9 +891,13 @@ do ifun=1,nfun
       theta(2:(nbasis+1),ifun)=theta_new
       theta2(:,ifun)=theta2_new
       theta02(ifun)=theta02_new
-      if (fmodel(ifun).eq.5 .or. fmodel(ifun).eq.6 .or. fmodel(ifun).eq.7) then
-        psi(ifun)=psi_new
-        omega(ifun)=omega_new
+      if (fmodel(ifun).ge.5 .and. fmodel(ifun).le.7) then
+        psi(1,ifun)=psi_new
+        omega(1,ifun)=omega_new
+      end if
+      if (fmodel(ifun).eq.8) then
+        psi(:,ifun) = psi_newExt
+        omega(:,ifun) = omega_newExt
       end if
       met_var_all(ifun)=met_var_all_new(ifun)
       fxobs(:,ifun)=fxobs_new
@@ -815,7 +906,6 @@ do ifun=1,nfun
     end if
 
     if (iflag_AM.eq.1) then
-      icount_AM=icount_AM+1
       met_mAM(ifun)=met_mAM(ifun)+(met_var_all(ifun)-met_mAM(ifun))/dble(icount_AM)
       met_vAM(ifun)=(dble(icount_AM-1)/dble(icount_AM))*met_vAM(ifun) + &
                     ((met_var_all(ifun)-met_mAM(ifun))**2.d0)/dble(icount_AM)
@@ -919,7 +1009,7 @@ implicit none
 real(8) :: GetLogPrior
 
 !Internal argument
-integer :: ifun
+integer :: ifun,k
 real(8) :: residb(nparw),thvar(nbasis+1),thetasq(nbasis+1,nfun)
 real(8) :: gamvec(nbasis,nfun),sse,theta0_lnp0,alpha_lnp0,lnpriorf
 real(8) :: cdfnorm
@@ -966,14 +1056,25 @@ do ifun=1,nfun
              dlog(2.d0*PI*alpha_v0)/2.d0-alpha_lnp0
   end if
 
-  if (fmodel(ifun).eq.5 .or. fmodel(ifun).eq.6 .or. fmodel(ifun).eq.7) then
+  if (fmodel(ifun).ge.5 .and. fmodel(ifun).le.7) then
     if (iflagpsi.eq.1) then
-      lnpriorf=lnpriorf-((psi(ifun)-psi_m0)**2.d0)/(2.d0*psi_v0)- &
+      lnpriorf=lnpriorf-((psi(1,ifun)-psi_m0)**2.d0)/(2.d0*psi_v0)- &
                dlog(2.d0*PI*psi_v0)/2.d0-psi_lnp0
     end if
-    lnpriorf=lnpriorf-((omega(ifun)-omega_m0(ifun))**2.d0)/(2.d0*omega_v0(ifun))- &
+    lnpriorf=lnpriorf-((omega(1,ifun)-omega_m0(1,ifun))**2.d0)/(2.d0*omega_v0(ifun))- &
              dlog(2.d0*PI*omega_v0(ifun))/2.d0-omega_lnp0(ifun)
   end if
+
+  if (fmodel(ifun).eq.8) then
+    do k=1,nExtremes(ifun)
+      if (iflagpsi.eq.1) then
+        lnpriorf = lnpriorf - ((psi(k,ifun)-psi_m0)**2.d0)/(2.d0*psi_v0)- &
+                 dlog(2.d0*PI*psi_v0)/2.d0-psi_lnp0
+      end if
+      lnpriorf=lnpriorf-((omega(k,ifun)-omega_m0(k,ifun))**2.d0)/(2.d0*omega_v0(ifun))- &
+               dlog(2.d0*PI*omega_v0(ifun))/2.d0-omega_lnp0(ifun)
+    end do
+  endif
 end do
 
 GetLogPrior=lnpriorf

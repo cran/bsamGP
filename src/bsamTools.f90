@@ -376,6 +376,88 @@ subroutine SquishUp(x,psi,omega,n,xout)
   return
 end subroutine SquishUp
 
+subroutine GetExtf(fpm,omega,psi,theta,xobs,xgrid,phixobs,phixgrid,xdelta,xinxgrid, &
+                 xidelta,xrange,quadfacts,intsimpfacts,nbasis,nr,nobs,ngrid,nExtreme,fxobs,fxgrid)
+  implicit none
+
+  !input arguments
+  integer,intent(in) :: nbasis,nr,nobs,ngrid,nExtreme
+  integer,intent(in) :: xinxgrid(nobs),quadfacts(nr,3),intsimpfacts(ngrid)
+  real(8), intent(in) :: fpm,omega(nExtreme),psi(nExtreme),theta(nbasis+1),xobs(nobs),xgrid(ngrid)
+  real(8), intent(in) :: phixobs(nr,nobs),phixgrid(nr,ngrid),xdelta,xidelta(nobs)
+  real(8), intent(in) :: xrange
+
+  !output arguments
+  real(8),intent(out) :: fxobs(nobs),fxgrid(ngrid)
+
+  !internal arguments
+  real(8) :: z2xobs(nobs),z2xgrid(ngrid),hxgrid(ngrid),hxobs(nobs)
+  real(8) :: f1xgrid(ngrid),f1xobs(nobs),fint
+
+  call QuadMult(theta,phixobs,quadfacts,nbasis+1,nr,nobs,z2xobs)
+  call QuadMult(theta,phixgrid,quadfacts,nbasis+1,nr,ngrid,z2xgrid)
+
+  call SquishDownGen(xgrid,psi,omega,nExtreme,ngrid,hxgrid)
+  call SquishDownGen(xobs,psi,omega,nExtreme,nobs,hxobs)
+
+  f1xgrid=z2xgrid*hxgrid
+  f1xobs=z2xobs*hxobs
+
+  call InTrapCum(f1xgrid,xdelta,ngrid,fxgrid)
+  call IntFobs(f1xobs,f1xgrid,fxgrid,xinxgrid,xidelta,nobs,ngrid,fxobs)
+
+  call IntSimpsonfxgrid(fxgrid,xdelta,intsimpfacts,ngrid,fint)
+  fxgrid=fxgrid-fint/xrange
+  fxobs=fxobs-fint/xrange
+
+  if (fpm.lt.0.d0) then
+    fxgrid=-(fxgrid)
+    fxobs=-(fxobs)
+
+    f1xgrid=-(f1xgrid)
+    f1xobs=-(f1xobs)
+
+  end if
+
+  return
+end subroutine GetExtf
+
+subroutine SquishDownGen(x,psi,omega,nExtreme,n,xout)
+  implicit none
+
+  !input arguments
+  integer,intent(in) :: n, nExtreme
+  real(8), intent(in) :: x(n), psi(nExtreme), omega(nExtreme)
+
+  !output argument
+  real(8),intent(out) :: xout(n)
+
+  !internal arguments
+  integer :: i, k
+  real(8) :: knot(nExtreme-1)
+
+  do k=1,(nExtreme-1)
+    knot(k) = 0.5*(omega(k)+omega(k+1))
+  end do
+
+  loopObs : do i=1,n
+    if(x(i).le.knot(1)) then
+      xout(i) = - tanh(psi(1)*(x(i) - omega(1)))
+    else if(x(i).gt.knot(nExtreme-1)) then
+      xout(i) = (-1.d0)**(nExtreme) * tanh(psi(nExtreme)*(x(i) - omega(nExtreme)))
+    else
+      loopK : do k=2,(nExtreme-1)
+        if (x(i).gt.knot(k-1) .and. x(i).le.knot(k)) then
+          xout(i) = ((-1.d0)**k) * tanh(psi(k)*(x(i) - omega(k)))
+          exit loopK
+        end if
+      end do loopK
+    end if
+  end do loopObs
+
+  return
+end subroutine SquishDownGen
+
 
 subroutine InTrapCum(f,delta,n,fint)
   implicit none
@@ -750,9 +832,9 @@ subroutine GetPhi(x,xmin,xrange,phijj,phijk,phi00,phi0k,nbasis,n,phix)
     call phi00(xi,xmin,xrange,c)
     call phi0k(xi,kall,xmin,xrange,nbasis,d)
     phi1(1,1)=c
-    phi1(1,2:nbasis)=d
-    phi1(2:nbasis,1)=d
-    phi1(2:nbasis,2:nbasis)=phi
+    phi1(1,2:(nbasis+1))=d
+    phi1(2:(nbasis+1),1)=d
+    phi1(2:(nbasis+1),2:(nbasis+1))=phi
     call vech(phi1,nbasis+1,nbasis+1,phix(:,i))
   end do
 

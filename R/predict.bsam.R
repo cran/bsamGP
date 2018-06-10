@@ -9,6 +9,8 @@
   fpm <- object$fpm
   xmin <- object$xmin
   xmax <- object$xmax
+  nExtremes <- object$nExtremes
+  maxNext <- ifelse(max(nExtremes)>1, max(nExtremes), 1)
 
   if (missing(newp) && missing(newnp)) {
     n <- object$n
@@ -45,11 +47,11 @@
                          as.matrix(object$mcmc.draws$omega), fxobsg = array(0, dim = c(n, nfun, smcmc)),
                          NAOK = TRUE, PACKAGE = "bsamGP")$fxobsg
     } else {
-      fxobsg <- .Fortran("predictbsam", as.matrix(newnp), as.double(xmin), as.double(xmax),as.integer(n),
-                         as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel),
+        fxobsg <- .Fortran("predictbsam", as.matrix(newnp), as.double(xmin), as.double(xmax),as.integer(n),
+                         as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(nExtremes), as.integer(maxNext), as.integer(fmodel),
                          as.double(fpm), as.integer(smcmc), as.array(object$mcmc.draws$theta),
-                         as.matrix(object$mcmc.draws$alpha), as.matrix(object$mcmc.draws$psi),
-                         as.matrix(object$mcmc.draws$omega), fxobsg = array(0, dim = c(n, nfun, smcmc)),
+                         as.matrix(object$mcmc.draws$alpha), as.array(object$mcmc.draws$psi),
+                         as.array(object$mcmc.draws$omega), fxobsg = array(0, dim = c(n, nfun, smcmc)),
                          NAOK = TRUE, PACKAGE = "bsamGP")$fxobsg
     }
     if (object$model == "gbsar") {
@@ -128,10 +130,10 @@
                          NAOK = TRUE, PACKAGE = "bsamGP")$fxobsg
     } else {
       fxobsg <- .Fortran("predictbsam", as.matrix(newnp), as.double(xmin), as.double(xmax),as.integer(n),
-                         as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(fmodel),
+                         as.integer(nfun), as.integer(nbasis), as.integer(nint), as.integer(nExtremes), as.integer(maxNext), as.integer(fmodel),
                          as.double(fpm), as.integer(smcmc), as.array(object$mcmc.draws$theta),
-                         as.matrix(object$mcmc.draws$alpha), as.matrix(object$mcmc.draws$psi),
-                         as.matrix(object$mcmc.draws$omega), fxobsg = array(0, dim = c(n, nfun, smcmc)),
+                         as.matrix(object$mcmc.draws$alpha), as.array(object$mcmc.draws$psi),
+                         as.array(object$mcmc.draws$omega), fxobsg = array(0, dim = c(n, nfun, smcmc)),
                          NAOK = TRUE, PACKAGE = "bsamGP")$fxobsg
     }
 

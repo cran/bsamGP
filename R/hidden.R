@@ -54,7 +54,7 @@
 "function.shape" <- function(shape = c("Free", "Increasing", "Decreasing", "IncreasingConvex", "DecreasingConcave", "IncreasingConcave",
                                        "DecreasingConvex", "IncreasingS", "DecreasingS", "IncreasingRotatedS", "DecreasingRotatedS", "InvertedU", "Ushape")) {
   choices <- c("Free", "Increasing", "Decreasing", "IncreasingConvex", "DecreasingConcave", "IncreasingConcave", "DecreasingConvex",
-               "IncreasingS", "DecreasingS", "IncreasingRotatedS", "DecreasingRotatedS", "InvertedU", "Ushape")
+               "IncreasingS", "DecreasingS", "IncreasingRotatedS", "DecreasingRotatedS", "InvertedU", "Ushape","IncMultExtreme","DecMultExtreme")
   shape <- match.arg(shape, choices, several.ok = TRUE)
   nfun <- length(shape)
   fmodel <- numeric(nfun)
@@ -99,6 +99,12 @@
     }, Ushape = {
       fmodel[i] <- 7
       fpm[i] <- -1
+    }, IncMultExtreme = {
+      fmodel[i] <- 8
+      fpm[i] <- 1      
+    }, DecMultExtreme = {
+      fmodel[i] <- 8
+      fpm[i] <- -1            
     })
   }
   list(fmodel = fmodel, fpm = fpm, nfun = nfun)

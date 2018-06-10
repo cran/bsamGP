@@ -598,6 +598,9 @@ end do
 
 met_var_all_new=0.d0
 met_beta_new=0.d0
+if (iflag_AM.eq.1) then
+  icount_AM=icount_AM+1
+end if
 do ifun=1,nfun
   testp=0.d0
   rk=wb+sum(fxobs,2)-fxobs(:,ifun)
@@ -747,14 +750,13 @@ do ifun=1,nfun
   end if
 
   if (iflag_AM.eq.1) then
-    icount_AM=icount_AM+1
     met_mAM(ifun)=met_mAM(ifun)+(met_var_all(ifun)-met_mAM(ifun))/dble(icount_AM)
     met_vAM(ifun)=(dble(icount_AM-1)/dble(icount_AM))*met_vAM(ifun) + &
                   ((met_var_all(ifun)-met_mAM(ifun))**2.d0)/dble(icount_AM)
   end if
   ck=metw*met_var_all(ifun)+(1.d0-metw)*met_mAM(ifun)
   met_beta_AM(ifun)=(met_alpha-1.d0)*ck
-  end do
+end do
 
 icount_alpha=icount_alpha+1
 if(mod(icount_alpha,nbatch).eq.0) then

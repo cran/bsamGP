@@ -8,8 +8,10 @@ export(
   bsaqdpm,
   bsar,
   bsardpm,
+  bsarBig,
   gblr,
   gbsar,
+  intgrat,
   intsim,
   rald,
   fs
