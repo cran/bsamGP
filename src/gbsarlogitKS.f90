@@ -420,6 +420,7 @@ if(maxval(fmodel).gt.1) then
 end if
 
 isave=1
+iflag_AM=1  ! placeholder for Free only case.
 nmcmc=nblow+nskip*smcmc
 do imcmc=1,nmcmc
   if(imcmc.eq.1) then

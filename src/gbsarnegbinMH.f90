@@ -445,6 +445,7 @@ if(maxval(fmodel).gt.1) then
 end if
 
 ibeta_AM=1
+iflag_AM=1  ! placeholder for Free only case.
 isave=1
 nmcmc=nblow+nskip*smcmc
 allocate(betas(nmcmc+1,nparw))

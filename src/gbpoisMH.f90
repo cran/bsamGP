@@ -102,13 +102,15 @@ real(8), intent(in) :: b(nparx),iB0(nparx,nparx),mub(nparx),Sb(nparx,nparx)
 real(8) :: accept_ftn
 
 !internal arguments
-real(8) :: lprior0,llike0,lprop0,lprior1,llike1,lprop1
+real(8) :: lprior0,llike0,lprop0,lprior1,llike1,lprop1, residb(nparx)
 
-lprior0=-dot_product(Beta0-b,matmul(iB0,Beta0-b))/2.d0
+residb=Beta0-b
+lprior0=-dot_product(residb,matmul(iB0,residb))/2.d0
 llike0=sum(-dexp(Xb0))+sum(y*Xb0)
 lprop0=mvnpdf(Beta0,mub,Sb,nparx,.true.)
 
-lprior1=-dot_product(Beta1-b,matmul(iB0,Beta1-b))/2.d0
+residb=Beta1-b
+lprior1=-dot_product(residb,matmul(iB0,residb))/2.d0
 llike1=sum(-dexp(Xb1))+sum(y*Xb1)
 lprop1=mvnpdf(Beta1,mub,Sb,nparx,.true.)
 

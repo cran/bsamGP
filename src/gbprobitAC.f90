@@ -92,10 +92,14 @@ contains
 function GetLogPrior()
 implicit none
 
+!Input argument
+real(8) :: residb(npar)
+
 !Output argument
 real(8) :: GetLogPrior
 
-GetLogPrior=-dot_product(beta-beta_m0,matmul(beta_v0i,beta-beta_m0))/2.d0- &
+residb=beta-beta_m0
+GetLogPrior=-dot_product(residb,matmul(beta_v0i,residb))/2.d0- &
             dble(npar)*dlog(2.d0*PI)/2.d0-beta_lnv0/2.d0
 
 return
