@@ -1,0 +1,22 @@
+bibentry(bibtype = "Article",
+  title        = "{bsamGP}: An {R} Package for {B}ayesian Spectral Analysis Models Using {G}aussian Process Priors",
+  author       = c(person(given = "Seongil",
+                          family = "Jo",
+                          email = "statjs@jbnu.ac.kr"),
+                   person(given = "Taeryon",
+                          family = "Choi",
+                          email = "trchoi@korea.ac.kr"),
+                   person(given = "Beomjo",
+                          family = "Park"),
+                   person(given = "Peter",
+                          family = "Lenk")),
+  journal      = "Journal of Statistical Software",
+  year         = "2019",
+  volume       = "90",
+  number       = "10",
+  pages        = "1--41",
+  doi          = "10.18637/jss.v090.i10",
+
+  header       = "To cite bsamGP in publications use:"
+)
+

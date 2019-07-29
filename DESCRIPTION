@@ -1,13 +1,13 @@
 Package: bsamGP
 Type: Package
 Title: Bayesian Spectral Analysis Models using Gaussian Process Priors
-Version: 1.2.1
-Date: 2018-06-15
+Version: 1.2.2
+Date: 2019-07-24
 Author: Seongil Jo [aut, cre], 
     Taeryon Choi [aut], 
     Beomjo Park [aut, cre],
     Peter J. Lenk [ctb]
-Maintainer: Beomjo Park <beomjo@korea.ac.kr>
+Maintainer: Beomjo Park <beomjop@andrew.cmu.edu>
 Imports: MASS, ggplot2, gridExtra
 Description: Contains functions to perform Bayesian inference
     using a spectral analysis of Gaussian process priors.
@@ -29,6 +29,6 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
 NeedsCompilation: yes
-Packaged: 2018-06-15 12:51:57 UTC; Beomjo
+Packaged: 2019-07-29 14:17:51 UTC; jokoo
 Repository: CRAN
-Date/Publication: 2018-06-15 13:10:00 UTC
+Date/Publication: 2019-07-29 15:00:03 UTC

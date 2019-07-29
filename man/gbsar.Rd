@@ -153,14 +153,16 @@ marginal.likelihood = TRUE, algorithm = c('AM', 'KS'), verbose = FALSE)
 
 \references{
 
-Albert, J. H. and Chib, S. (1993) Bayesian Analysis of Binary and Polychotomous Response Data.
-	\emph{Journal of the American Statistical Association}, \bold{88}, 669-679.
-
-Holmes, C. C. and Held, L. (2006) Bayesian Auxiliary Variables Models for Binary and Multinomial Regression.
-	\emph{Bayesian Analysis}, \bold{1}, 145-168.
+Jo, S., Choi, T., Park, B. and Lenk, P. (2019). bsamGP: An R Package for Bayesian Spectral Analysis Models
+ Using Gaussian Process Priors. \emph{Journal of Statistical Software}, \bold{90}, 310-320.
 
 Lenk, P. and Choi, T. (2017) Bayesian Analysis of Shape-Restricted Functions using
 	Gaussian Process Priors. \emph{Statistica Sinica}, \bold{27}, 43-69.
+
+Roberts, G. O. and Rosenthal, J. S. (2009) Examples of Adaptive MCMC. \emph{Journal of Computational and Graphical Statistics}, \bold{18}, 349-367.
+
+Holmes, C. C. and Held, L. (2006) Bayesian Auxiliary Variables Models for Binary and Multinomial Regression.
+	\emph{Bayesian Analysis}, \bold{1}, 145-168.
 
 Gelfand, A. E. and Dey, K. K. (1994) Bayesian model choice: asymptotics and exact calculations.
 	\emph{Journal of the Royal Statistical Society. Series B - Statistical Methodology}, \bold{56}, 501-514.
@@ -168,7 +170,8 @@ Gelfand, A. E. and Dey, K. K. (1994) Bayesian model choice: asymptotics and exac
 Newton, M. A. and Raftery, A. E. (1994) Approximate Bayesian inference with the weighted likelihood bootstrap (with discussion).
 	\emph{Journal of the Royal Statistical Society. Series B - Statistical Methodology}, \bold{56}, 3-48.
 
-Roberts, G. O. and Rosenthal, J. S. (2009) Examples of Adaptive MCMC. \emph{Journal of Computational and Graphical Statistics}, \bold{18}, 349-367.
+Albert, J. H. and Chib, S. (1993) Bayesian Analysis of Binary and Polychotomous Response Data.
+	\emph{Journal of the American Statistical Association}, \bold{88}, 669-679.
 
 }
 

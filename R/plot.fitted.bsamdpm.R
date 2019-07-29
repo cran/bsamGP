@@ -174,10 +174,10 @@
 
       plot(x = xobs, y = resid, pch = NA, main = '',
            xlab = x$xname[1], ylab = 'Parametric Residuals', ...)
-      polygon(x = c(xobs, rev(xobs)),
-              y = c(fxobsl, rev(fxobsu)), col = 'gray70', lty = 2)
+      polygon(x = c(xgrid, rev(xgrid)),
+              y = c(fxgridl, rev(fxgridu)), col = 'gray70', lty = 2)
       points(x = xobs, y = resid, lwd = 2)
-      lines(x = xobs, y = fxobsm, lwd = 2, col = 2)
+      lines(x = xgrid, y = fxgridm, lwd = 2, col = 2)
     } else {
       for (i in 1:nfun) {
         plot(x = xgrid[, i], y = fxgridm[, i], pch = NA,
@@ -189,10 +189,10 @@
 
         plot(x = xobs[, i], y = resid - rowSums(fxobsm[, -i, drop = FALSE]), pch = NA,
              main = '', xlab = x$xname[i], ylab = 'Partial Residuals', ...)
-        polygon(x = c(xobs[, i], rev(xobs[, i])),
-                y = c(fxobsl[, i], rev(fxobsu[, i])), col = 'gray70', lty = 2)
+        polygon(x = c(xgrid[, i], rev(xgrid[, i])),
+                y = c(fxgridl[, i], rev(fxgridu[, i])), col = 'gray70', lty = 2)
         points(x = xobs[, i], y = resid - rowSums(fxobsm[, -i, drop = FALSE]), lwd = 2)
-        lines(x = xobs[, i], y = fxobsm[, i], lwd = 2, col = 2)
+        lines(x = xgrid[, i], y = fxgridm[, i], lwd = 2, col = 2)
       }
     }
 

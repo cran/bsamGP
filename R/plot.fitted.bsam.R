@@ -1,4 +1,4 @@
-"plot.fitted.bsam" <- function(x, ask = FALSE, ggplot2 = TRUE, legend.position = "none", ...) {
+"plot.fitted.bsam" <- function(x, type = "response", ask = FALSE, ggplot2 = TRUE, legend.position = "none", ...) {
   yobs <- x$y
   xobs <- x$x
   nobs <- x$n
@@ -203,7 +203,7 @@
     }
   } else {
     if (nfun == 1) {
-	  o = order(xobs[, 1])
+	    o = order(xobs[, 1])
       if (x$model == 'gbsar') {
         if (x$family == "bernoulli") {
           if (x$link == 'probit') {
@@ -216,37 +216,46 @@
             fxm = logit(fxobsm + rep(median(x$wbeta$mean), nobs))
             fxu = logit(fxobsu + rep(median(x$wbeta$lower), nobs))
           }
-
-          plot(x = xgrid[, 1], y = fxgridm[, 1], main = '', pch = NA, ylim = range(x$fxgrid),
-               xlab = x$xname[1], ylab = paste('f(', x$xname, ')', sep = ''), ...)
-          polygon(x = c(xgrid[, 1], rev(xgrid[, 1])),
-                  y = c(fxgridl[, 1], rev(fxgridu[, 1])), col = 'gray70', lty = 2)
-          lines(x = xgrid[, 1], y = fxgridm[, 1], lwd = 2, col = 2)
-
-          plot(x = xobs[, 1], y = yobs, pch = NA, xlab = x$xname[1], main = '',
-               ylab = paste('P(', x$yname, ')', sep = ''), ylim = c(0, 1), ...)
-          polygon(x = c(xobs[o, 1], rev(xobs[o, 1])),
-                  y = c(fxl[o], rev(fxu[o])), col = 'gray70', lty = 2)
-          lines(x = xobs[o, 1], y = fxm[o], lwd = 2, col = 2)
-          rug(x = xobs[yobs == 0, 1], side = 1)
-          rug(x = xobs[yobs == 1, 1], side = 3)
+          switch(type,
+          term = {
+            plot(x = xgrid[, 1], y = fxgridm[, 1], main = '', pch = NA, ylim = range(x$fxgrid),
+                 xlab = x$xname[1], ylab = paste('f(', x$xname, ')', sep = ''), ...)
+            polygon(x = c(xgrid[, 1], rev(xgrid[, 1])),
+                    y = c(fxgridl[, 1], rev(fxgridu[, 1])), col = 'gray70', lty = 2)
+            lines(x = xgrid[, 1], y = fxgridm[, 1], lwd = 2, col = 2)
+          },
+          response = {
+            plot(x = xobs[, 1], y = yobs, pch = NA, xlab = x$xname[1], main = '',
+                 ylab = paste('P(', x$yname, ')', sep = ''), ylim = c(0, 1), ...)
+            polygon(x = c(xobs[o, 1], rev(xobs[o, 1])),
+                    y = c(fxl[o], rev(fxu[o])), col = 'gray70', lty = 2)
+            lines(x = xobs[o, 1], y = fxm[o], lwd = 2, col = 2)
+            rug(x = xobs[yobs == 0, 1], side = 1)
+            rug(x = xobs[yobs == 1, 1], side = 3)
+          }
+        )
         } else {
-          plot(x = xgrid[, 1], y = fxgridm[, 1], main = '', pch = NA, ylim = range(x$fxgrid),
-               xlab = x$xname[1], ylab = paste('f(', x$xname, ')', sep = ''), ...)
-          polygon(x = c(xgrid[, 1], rev(xgrid[, 1])),
-                  y = c(fxgridl[, 1], rev(fxgridu[, 1])), col = 'gray70', lty = 2)
-          lines(x = xgrid[, 1], y = fxgridm[, 1], lwd = 2, col = 2)
-
-          fxl = exp(fxobsl + rep(median(x$wbeta$upper), nobs))
-          fxm = exp(fxobsm + rep(median(x$wbeta$mean), nobs))
-          fxu = exp(fxobsu + rep(median(x$wbeta$lower), nobs))
-          o = order(xobs[, 1])
-          plot(x = xobs[, 1], y = yobs, pch = NA, xlab = x$xname[1], main = '',
-               ylab = x$yname[1], ylim = range(c(yobs, fxl, fxu)), ...)
-          polygon(x = c(xobs[o, 1], rev(xobs[o, 1])),
-                  y = c(fxl[o], rev(fxu[o])), col = 'gray70', lty = 2)
-          points(x = xobs[, 1], y = yobs, lwd = 2, pch = 1)
-          lines(x = xobs[o, 1], y = fxm[o], lwd = 2, col = 2)
+          switch(type,
+          term = {
+            plot(x = xgrid[, 1], y = fxgridm[, 1], main = '', pch = NA, ylim = range(x$fxgrid),
+                 xlab = x$xname[1], ylab = paste('f(', x$xname, ')', sep = ''), ...)
+            polygon(x = c(xgrid[, 1], rev(xgrid[, 1])),
+                    y = c(fxgridl[, 1], rev(fxgridu[, 1])), col = 'gray70', lty = 2)
+            lines(x = xgrid[, 1], y = fxgridm[, 1], lwd = 2, col = 2)
+          },
+          response = {
+            fxl = exp(fxobsl + rep(median(x$wbeta$upper), nobs))
+            fxm = exp(fxobsm + rep(median(x$wbeta$mean), nobs))
+            fxu = exp(fxobsu + rep(median(x$wbeta$lower), nobs))
+            o = order(xobs[, 1])
+            plot(x = xobs[, 1], y = yobs, pch = NA, xlab = x$xname[1], main = '',
+                 ylab = x$yname[1], ylim = range(c(yobs, fxl, fxu)), ...)
+            polygon(x = c(xobs[o, 1], rev(xobs[o, 1])),
+                    y = c(fxl[o], rev(fxu[o])), col = 'gray70', lty = 2)
+            points(x = xobs[, 1], y = yobs, lwd = 2, pch = 1)
+            lines(x = xobs[o, 1], y = fxm[o], lwd = 2, col = 2)
+          }
+          )
         }
       } else {
         resid <- yobs - wbm
@@ -267,16 +276,19 @@
       }
     } else {
       for (i in 1:nfun) {
-        resid = yobs - wbm - rowSums(fxobsm[, -i, drop = FALSE])
-        plot(x = xgrid[, i], y = fxgridm[, i], pch = NA,
-             ylim = range(c(resid, fxgridl[, i], fxgridu[, i])), main = '',
-             xlab = x$xname[i], ylab = paste('f(', x$xname[i], ')', sep = ''), ...)
-        polygon(x = c(xgrid[, i], rev(xgrid[, i])),
-                y = c(fxgridl[, i], rev(fxgridu[, i])), col = 'gray70', lty = 2)
-        lines(x = xgrid[, i], y = fxgridm[, i], lwd = 2, col = 2)
-
-  		  o = order(xobs[, i])
-        if (x$model == 'gbsar') {
+        switch(type,
+        term = {
+          resid = yobs - wbm - rowSums(fxobsm[, -i, drop = FALSE])
+          plot(x = xgrid[, i], y = fxgridm[, i], pch = NA,
+               ylim = range(c(resid, fxgridl[, i], fxgridu[, i])), main = '',
+               xlab = x$xname[i], ylab = paste('f(', x$xname[i], ')', sep = ''), ...)
+          polygon(x = c(xgrid[, i], rev(xgrid[, i])),
+                  y = c(fxgridl[, i], rev(fxgridu[, i])), col = 'gray70', lty = 2)
+          lines(x = xgrid[, i], y = fxgridm[, i], lwd = 2, col = 2)
+        },
+        response = {
+  		    o = order(xobs[, i])
+          if (x$model == 'gbsar') {
           if (x$family == 'bernoulli') {
             if (x$link == 'probit') {
               fxl = pnorm(fxobsl[, i])
@@ -307,14 +319,16 @@
             lines(x = xobs[o, i], y = fxm[o], lwd = 2, col = 2)
           }
         } else {
-          resid = yobs - wbm - rowSums(fxobsm[, -i, drop = FALSE])
-          plot(x = xobs[, i], y = resid, pch = NA, ylim = range(c(resid, fxobsl[, i], fxobsu[, i])),
-               main = '', xlab = x$xname[i], ylab = 'Partial Residuals', ...)
-          polygon(x = c(xobs[o, i], rev(xobs[o, i])),
-                  y = c(fxobsl[o, i], rev(fxobsu[o, i])), col = 'gray70', lty = 2)
-          points(x = xobs[, i], y = yobs - wbm - rowSums(fxobsm[, -i, drop = FALSE]), lwd = 2)
-          lines(x = xobs[o, i], y = fxobsm[o, i], lwd = 2, col = 2)
+            resid = yobs - wbm - rowSums(fxobsm[, -i, drop = FALSE])
+            plot(x = xobs[, i], y = resid, pch = NA, ylim = range(c(resid, fxobsl[, i], fxobsu[, i])),
+                 main = '', xlab = x$xname[i], ylab = 'Partial Residuals', ...)
+            polygon(x = c(xobs[o, i], rev(xobs[o, i])),
+                    y = c(fxobsl[o, i], rev(fxobsu[o, i])), col = 'gray70', lty = 2)
+            points(x = xobs[, i], y = yobs - wbm - rowSums(fxobsm[, -i, drop = FALSE]), lwd = 2)
+            lines(x = xobs[o, i], y = fxobsm[o, i], lwd = 2, col = 2)
+          }
         }
+        )
       }
     }
   }

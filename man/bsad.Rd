@@ -105,6 +105,10 @@ verbose = FALSE)
 
 \references{
 
+Jo, S., Choi, T., Park, B. and Lenk, P. (2019). bsamGP: An R Package for Bayesian Spectral Analysis Models
+ Using Gaussian Process Priors. \emph{Journal of Statistical Software}, \bold{90}, 310-320.
+
+
 Lenk, P. (2003) Bayesian semiparametric density estimation and model verification
 	using a logistic Gaussian process. \emph{Journal of Computational and Graphical Statistics}, \bold{12}, 548-565.
 

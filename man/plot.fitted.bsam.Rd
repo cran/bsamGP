@@ -5,10 +5,11 @@
 Plots the data and the fit for Bayesian spectral analysis models.
 }
 \usage{
-\method{plot}{fitted.bsam}(x, ask, ggplot2, legend.position, \dots)
+\method{plot}{fitted.bsam}(x, type, ask, ggplot2, legend.position, \dots)
 }
 \arguments{
   \item{x}{ a \code{fitted.bsam} object}
+  \item{type}{ the type of fitted plot. The default is on the scale of the response variable\code{type="response"}; the alternative \code{type="term"} is on the scale of the nonparametric predictor. Note that this affects only on glm type models. For example, binomial model with the default option gives the predicted probabilites.}
   \item{ask}{see. \code{\link{par}}}
   \item{ggplot2}{a logical variable. If \code{TRUE} the \code{ggplot2} package is used.}
   \item{legend.position}{the position of legends (\dQuote{none}, \dQuote{left}, \dQuote{right}, \dQuote{bottom}, \dQuote{top}). It is used when \code{ggplot2 = TRUE}.}

@@ -149,6 +149,9 @@ marginal.likelihood = TRUE, spm.adequacy = FALSE, verbose = FALSE)
 
 \references{
 
+Jo, S., Choi, T., Park, B. and Lenk, P. (2019). bsamGP: An R Package for Bayesian Spectral Analysis Models
+ Using Gaussian Process Priors. \emph{Journal of Statistical Software}, \bold{90}, 310-320.
+ 
 Lenk, P. and Choi, T. (2017) Bayesian Analysis of Shape-Restricted Functions using
 	Gaussian Process Priors. \emph{Statistica Sinica}, \bold{27}, 43-69.
 

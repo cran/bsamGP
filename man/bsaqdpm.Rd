@@ -154,6 +154,9 @@ verbose = FALSE)
 
 \references{
 
+Jo, S., Choi, T., Park, B. and Lenk, P. (2019). bsamGP: An R Package for Bayesian Spectral Analysis Models
+ Using Gaussian Process Priors. \emph{Journal of Statistical Software}, \bold{90}, 310-320.
+ 
 Kozumi, H. and Kobayashi, G. (2011) Gibbs sampling methods for Bayesian quantile regression.
 	\emph{Journal of Statistical Computation and Simulation}, \bold{81}(11), 1565-1578.
 
