@@ -5,7 +5,7 @@
 
 	* Seongil Jo <statjs@jbnu.ac.kr>
 	* Taeryon Choi <trchoi@korea.ac.kr>
-	* Beomjo Park <beomjo@korea.ac.kr>
+	* Beomjo Park <beomjop@andrew.cmu.edu>
 	* Peter J. Lenk <plenk@umich.edu>
 
 ## Acknowledgments
@@ -33,8 +33,9 @@
 		* Add verbose option.
 		* Minor Bug fix
 		
-	* v.1.2.0 -- 1.2.2
+	* v.1.2.0 -- 1.2.3
 		* Supports Multiple extreme shapes for bsar() and bsaq()
 		* Supports scalable regression function bsarBig()
 		* Memory bug fix
     * Minor bug fix
+    * gcc/gfortran 10 compatibility check

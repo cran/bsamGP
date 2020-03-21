@@ -41,12 +41,11 @@ call rndstart()
 nmcmc=nburn+nthin*nsave
 isave=1
 if (verbose.eq.1) then
-  call dblepr('Burnin ...',-1,1.d0,0)
+  call biprint()
 end if
 do imcmc=1,nmcmc
   call rchkusr() ! check interrupt
-  if(imcmc.eq.nburn+1 .and. verbose.eq.1) call dblepr('Main iterations ...',-1,1.d0,0)
-
+  if(imcmc.eq.nburn+1 .and. verbose.eq.1) call miprint()
   call update_beta()  ! update beta
 
   !save states

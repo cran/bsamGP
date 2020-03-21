@@ -110,7 +110,7 @@ ExactLogLikeSemiOldMaxKappa=ExactLogLikeSemiMaxKappa
 ExactLogLikeSemiNewMaxKappa=ExactLogLikeSemiMaxKappa
 
 if (verbose.eq.1) then
-  call dblepr('Burnin ...',-1,1.d0,0)
+  call biprint()
 end if
 MetProbPar=0
 MetProbSemi=0
@@ -128,7 +128,7 @@ do imcmc=1,nblow
 end do
 
 if (verbose.eq.1) then
-  call dblepr('Main iterations ...',-1,1.d0,0)
+  call miprint()
 end if
 MetProbPar=0
 MetProbSemi=0
@@ -460,7 +460,7 @@ do j=1,nint
     missy(1)=ydata(j)
     missy(2)=ymean(j)
     missy(3)=ymax
-    call dblepr('Missing ydata: ',-1,missy,3)
+    call missprint(missy(1), missy(2), missy(3))
     yj=mydata
   end if
   ydata(j)=yj

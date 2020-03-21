@@ -322,7 +322,7 @@ end do
 imcmc=0
 if(maxval(fmodel).gt.1) then
   if (verbose.eq.1) then
-    call dblepr('Initializing MCMC parameters ...',-1,1.d0,0)
+    call piprint()
   end if
   do imodmet=1,maxmodmet
     imodmetg=imodmet
@@ -493,7 +493,7 @@ nmcmc=nblow+nskip*smcmc
 do imcmc=1,nmcmc
   if(imcmc.eq.1) then
     if (verbose.eq.1) then
-      call dblepr('Burnin ...',-1,1.d0,0)
+      call biprint()
     end if
     pmet=0
   end if
@@ -507,7 +507,7 @@ do imcmc=1,nmcmc
           call aprint(ifun, dble(pmet(ifun))/dble(nblow))
         end if
       end do
-      call dblepr('Main iterations ...',-1,1.d0,0)
+      call miprint
     end if
     pmet=0
   end if

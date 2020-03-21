@@ -40,10 +40,10 @@ Dbeta=matmul(dobs,beta)
 nmcmc=nburn+nthin*npost
 isave=1
 if (verbose.eq.1) then
-  call dblepr('Burnin ...',-1,1.d0,0)
+  call biprint()
 end if
 do imcmc=1,nmcmc
-  if(imcmc.eq.nburn+1 .and. verbose.eq.1) call dblepr('Main iterations ...',-1,1.d0,0)
+  if(imcmc.eq.nburn+1 .and. verbose.eq.1) call miprint()
 
   do iobs=1,nobs
     call rchkusr() ! check interrupt

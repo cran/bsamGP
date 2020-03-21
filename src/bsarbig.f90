@@ -99,10 +99,10 @@ isave=1
 nmcmc=nblow+nskip*smcmc
 do imcmc=1,nmcmc
   if(imcmc.eq.1 .and. verbose.eq.1) then
-    call dblepr('Burnin ...',-1,1.d0,0)
+    call biprint()
   end if
   if(imcmc.eq.nblow+1 .and. verbose.eq.1) then
-    call dblepr('Main iterations ...',-1,1.d0,0)
+    call miprint()
   end if
 
   call rchkusr()  ! user interrupt

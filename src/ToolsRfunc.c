@@ -263,6 +263,26 @@ void F77_SUB(sprint)(int *iter, int *tot_iter, double *sec)
 	Rprintf("MCMC draws %i of %i (CPU time: %.3f s)\n", *iter, *tot_iter, *sec);
 }
 
+void F77_SUB(piprint)(void)
+{
+  Rprintf("Initializing MCMC parameters ...");
+}
+
+void F77_SUB(biprint)(void)
+{
+  Rprintf("Burnin ...");
+}
+
+void F77_SUB(miprint)(void)
+{
+  Rprintf("Main iterations ...");
+}
+
+void F77_SUB(missprint)(double *missy1, double *missy2, double *missy3)
+{
+  Rprintf("Missing ydata: %.4f %.4f %.4f\n", *missy1, *missy2, *missy3);
+}
+
 
 /******************************************************************************************************
  Missing value
