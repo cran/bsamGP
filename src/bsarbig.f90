@@ -35,6 +35,7 @@ call cpu_time(stime)
 call rndstart()
 
 kall=(/ (dble(k),k=0,nbasis-1) /)
+ndata=0
 
 ! compute grid on 0 to 1
 xdelta=1.d0/dble(nxgrid)

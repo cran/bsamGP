@@ -33,9 +33,9 @@
 		* Add verbose option.
 		* Minor Bug fix
 		
-	* v.1.2.0 -- 1.2.3
+	* v.1.2.0 -- 1.2.4
 		* Supports Multiple extreme shapes for bsar() and bsaq()
 		* Supports scalable regression function bsarBig()
 		* Memory bug fix
     * Minor bug fix
-    * gcc/gfortran 10 compatibility check
+    * gcc/gfortran 12 compatibility check

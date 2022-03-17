@@ -355,7 +355,7 @@ real(8),intent(in) :: x(d),mu(d),cov(d,d)
 real(8) :: mvnpdf
 
 ! Internal arguments
-real(8) :: detcov_half,covi(d,d),logpdf,logconst
+real(8) :: detcov_half,covi(d,d),resid(d),logpdf,logconst
 integer :: i,j,ok
 
 covi=cov
@@ -374,7 +374,8 @@ do i=1,(d-1)
 end do
 
 logconst=-dble(d)*dlog(2.d0*PI)/2.d0-dlog(detcov_half)
-logpdf=logconst-dot_product(x-mu,matmul(covi,x-mu))/2.d0
+resid=x-mu
+logpdf=logconst-dot_product(resid,matmul(covi,resid))/2.d0
 
 mvnpdf=dexp(logpdf)
 if (log_p) mvnpdf=logpdf

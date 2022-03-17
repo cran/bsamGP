@@ -1,4 +1,4 @@
-1aa713b1ee204449789332c2660dba17 *DESCRIPTION
+a8f96c2192466fb4e1f1025d3f5f46c0 *DESCRIPTION
 bbe0710498be858120bd9af6c3ed5e96 *NAMESPACE
 d4b3d79166b8231d1577447f0e5f489a *R/blq.R
 c53c772a33e5bdcfcbddd44266ef2022 *R/blr.R
@@ -41,7 +41,7 @@ ea567a3c27dfcd57d144a4c31cab7a5e *R/summary.blm.R
 707beb23d5dab5b62b6d06a0d929eb5f *R/summary.bsad.R
 c54ce0ecd845343a71ed08a0c14e6718 *R/summary.bsam.R
 0d2756be514fc1f37dc8a6b67f8cc25d *R/summary.bsamdpm.R
-85ae6b740a54d5db9bf7b1675a2bafad *README.md
+333fe2722bab33d445639632c3962eac *README.md
 613565629ec8737b0a1f371d92f11c61 *data/Elec.demand.RData
 011b5d16ae58094ce9638e73f3b7fbd9 *data/London.Mortality.RData
 d0ed6b70b2f589a736cea63789ce8e60 *data/cadmium.RData
@@ -85,7 +85,7 @@ b5a2e55322bfd8fa04cc4fb79e56fb06 *man/traffic.Rd
 d0bdb7fd1a0a13d62f216537fddff056 *man/wage.union.Rd
 7a32c4adb4c4ea9240d3e9f48a3fba34 *src/Makevars
 c77112654a5b7e2e06354c550f91e0fa *src/ToolsRfunc.c
-0ac1b38a61bd7ed956ee024e86c1432c *src/ToolsRfunf.f90
+a948a854811ec60a1aa0429823ae1d2c *src/ToolsRfunf.f90
 9d57db655dd1764885849ad15121ad90 *src/blreg.f90
 e2b68b6e6e2ace8154269e6035c84873 *src/bqreg.f90
 efcb84ac787dbe6ad6c07a9e58a84f61 *src/bqreggetlogg.f90
@@ -97,7 +97,7 @@ c41e515a0a14d8187c0472d1e48a13c2 *src/bsaram.f90
 3d5e6f594d55b534314c4c0e936b3ebe *src/bsaramdplocationscale.f90
 d193b241b9221c6ce4ab057731e53a18 *src/bsaramdpscale.f90
 837e150c6f9a56007f6735fae52de8c0 *src/bsaramgetlogg.f90
-4f2e4627d132c7b6718ff7329e6e3a55 *src/bsarbig.f90
+190445f76e0e03b176cf1142d0a90dc3 *src/bsarbig.f90
 408734af1230e32109c52567df72bdc1 *src/gbglmgetlogg.f90
 11ec6b47760d0cc0be8097cb4da55f3c *src/gblogitKS.f90
 deba52c472e481131f256124d9d354a2 *src/gblogitMH.f90
