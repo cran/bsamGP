@@ -27,7 +27,7 @@
 }
 }
 
-\source{\url{http://staff.pubhealth.ku.dk/~tag/Teaching/share/data/Plasma.html}}
+\source{\url{https://lib.stat.cmu.edu/datasets/Plasma_Retinol}}
 \references{
 
 Nierenberg, D. W., Stukel, T. A., Baron, J. A., Dain, B. J., and Greenberg, E. R. (1989).

@@ -162,7 +162,7 @@ Jo, S., Choi, T., Park, B. and Lenk, P. (2019). bsamGP: An R Package for Bayesia
 Lenk, P. and Choi, T. (2017) Bayesian Analysis of Shape-Restricted Functions using
 	Gaussian Process Priors. \emph{Statistica Sinica}, \bold{27}, 43-69.
 
-MacEachern, S. N. and M{\"u}ller, P. (1998) Estimating mixture of Dirichlet process models.
+MacEachern, S. N. and Müller, P. (1998) Estimating mixture of Dirichlet process models.
 	\emph{Journal of Computational and Graphical Statistics}, \bold{7}, 223-238.
 
 Mukhopadhyay, S. and Gelfand, A. E. (1997) Dirichlet process mixed generalized linear models.

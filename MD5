@@ -1,4 +1,4 @@
-a8f96c2192466fb4e1f1025d3f5f46c0 *DESCRIPTION
+64b5060bb445e6ce73288b15b88c7eee *DESCRIPTION
 bbe0710498be858120bd9af6c3ed5e96 *NAMESPACE
 d4b3d79166b8231d1577447f0e5f489a *R/blq.R
 c53c772a33e5bdcfcbddd44266ef2022 *R/blr.R
@@ -55,10 +55,10 @@ d7f1f955d29f5fab81a32e1d8dcbabcb *man/blq.Rd
 6e937c73e8b707d8c28b1ea811e5c9e9 *man/blr.Rd
 5e863087cc55452a7fa339f106e8fce7 *man/bsad.Rd
 44d9854e76b668bca6db0904b5ed4c29 *man/bsaq.Rd
-05c486723704ad219a3047949712fe64 *man/bsaqdpm.Rd
+86def2bb0a9d883145e412eabb54e3b2 *man/bsaqdpm.Rd
 7bdcc1b12a4c803b7a61694658422640 *man/bsar.Rd
 9ae364c56d6fd7875fc112001a26334f *man/bsarBig.Rd
-67fd209a0ada237387be937661148c7d *man/bsardpm.Rd
+1df3e2677802ef36fc23e39598739815 *man/bsardpm.Rd
 da7e130ae90aee7566d4c40f273ab290 *man/cadmium.Rd
 29acdebd797e1e8d4c36cf7c8ff88609 *man/fitted.blm.Rd
 155f8cfc7f20bfe733f207cbc1db72c7 *man/fitted.bsad.Rd
@@ -69,7 +69,7 @@ b1382e5119129fb014454809bf9012c1 *man/fitted.bsam.Rd
 a14be2fd5e3764645814ff4570832e13 *man/gbsar.Rd
 faa7d18fc1807a7906d21842944452e0 *man/intgrat.Rd
 a7bfe325ea230fa15c3947a85d0b2719 *man/intsim.Rd
-cae056337996780c213997cfe4fcc7ec *man/plasma.Rd
+e398d87b133bfec968fdd48f2eb977d7 *man/plasma.Rd
 214cbc80fe1e1f44d47d8a3014b0972a *man/plot.blm.Rd
 db5e7d94e2cfa4f4b5bcee5ff7f6e75f *man/plot.bsad.Rd
 00929905b331f96e76cdea561a49c994 *man/plot.bsam.Rd
