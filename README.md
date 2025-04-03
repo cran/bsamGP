@@ -5,7 +5,7 @@
 
 	* Seongil Jo <statjs@jbnu.ac.kr>
 	* Taeryon Choi <trchoi@korea.ac.kr>
-	* Beomjo Park <beomjop@andrew.cmu.edu>
+	* Beomjo Park <beomjop@alumni.cmu.edu>
 	* Peter J. Lenk <plenk@umich.edu>
 
 ## Acknowledgments
@@ -33,7 +33,7 @@
 		* Add verbose option.
 		* Minor Bug fix
 		
-	* v.1.2.0 -- 1.2.4
+	* v.1.2.0 -- 1.2.6
 		* Supports Multiple extreme shapes for bsar() and bsaq()
 		* Supports scalable regression function bsarBig()
 		* Memory bug fix

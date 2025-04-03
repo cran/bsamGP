@@ -1,4 +1,4 @@
-64b5060bb445e6ce73288b15b88c7eee *DESCRIPTION
+4f95604bd16a343106d4d8da6e381f53 *DESCRIPTION
 bbe0710498be858120bd9af6c3ed5e96 *NAMESPACE
 d4b3d79166b8231d1577447f0e5f489a *R/blq.R
 c53c772a33e5bdcfcbddd44266ef2022 *R/blr.R
@@ -41,7 +41,7 @@ ea567a3c27dfcd57d144a4c31cab7a5e *R/summary.blm.R
 707beb23d5dab5b62b6d06a0d929eb5f *R/summary.bsad.R
 c54ce0ecd845343a71ed08a0c14e6718 *R/summary.bsam.R
 0d2756be514fc1f37dc8a6b67f8cc25d *R/summary.bsamdpm.R
-333fe2722bab33d445639632c3962eac *README.md
+01eb5889beb6a31d2b75f7b357061f96 *README.md
 613565629ec8737b0a1f371d92f11c61 *data/Elec.demand.RData
 011b5d16ae58094ce9638e73f3b7fbd9 *data/London.Mortality.RData
 d0ed6b70b2f589a736cea63789ce8e60 *data/cadmium.RData
