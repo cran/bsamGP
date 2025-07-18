@@ -189,7 +189,7 @@ ntheta0=count(ck.eq.0.d0)
 if (ntheta0.eq.nbasis) then
   gampar = 1.d0/w0
 else
-  z=transfer(ck.eq.0.d0, (/ (1,k=1,nbasis) /))
+  z=merge(1,0,ck.eq.0.d0)
   ckz=dble(z)*(1.d0-ck)+ck
   u1=(/ (rndunif(),k=1,nbasis) /)
   bnz=gampar+(dlog(ckz-dlog(u1)*egamkall)-dlog(ckz))/kall
